@@ -100,29 +100,13 @@
 
 - `ScaleTypeDrawable`：封装了对代理图片的缩放处理，具体参数与[Android ScaleType](http://developer.android.com/reference/android/widget/ImageView.ScaleType.html)相似。
 
+【待更新】
 
+###视图型Drawable
 
-##2. DraweeHierarchy
+【待更新】
 
-由于我们可能在视图中绘制与目标图片有关的其他图片（占位图、缩略图、圆角图等），那么维持一个视图的绘制层次就是一件比较必要的事情了，这么做能够帮我们控制绘制过程中图片的显示顺序。
-
-**DraweeHierarchy**是一个保持视图层次的组件。相比于Android内置的视图层次逻辑，它显得更加轻量级。所有的Hierarchy都继承`DraweeHierarchy`接口，这个接口中仅仅提供了获取视图最顶层Drawable的函数：
-
-```java
-public interface DraweeHierarchy {
-
-  public Drawable getTopLevelDrawable();
-}
-```
-
-内置的Hierarchy只有一个`GenericDraweeHierarchy`，它是通过继承`SettableDraweeHierarchy`实现的。
-
-它内部可以保存视图层次的几种实例：
-
-- PlaceHolderImage 占位图
-- ProgressBarImage 进度条图
-- 
-
+##2. 通过Hierarchy对象控制Drawable视图
 
 
 ##参考文献：
