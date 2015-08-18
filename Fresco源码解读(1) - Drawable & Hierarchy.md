@@ -16,23 +16,41 @@
 直接上源码的一个视图例子就好理解了，作者进行了适当修改与翻译。
 
  o 层次型Drawable（维持图层）
+ 
  |
+ 
  ------ 容器型Drawable（可对内容进行缩放）
+ 
  |　　　　|
+ 
  |　　　　--- 视图型Drawable（存放占位图）
+ 
  |
+ 
  ------ 容器型Drawable（可对内容进行缩放）
+ 
  |　　　　|
+ 
  |　　　　----- 容器型Drawable（可多次设置内容）
+ 
  |　　　　　　　|
+ 
  |　　　　　　　--- 视图型Drawable（存放目标图片）
+ 
  |
+ 
  ------ 容器型Drawable（可对内容进行缩放）
+ 
  |　　　　|
+ 
  |　　　　--- 视图型Drawable（存放重试图片）
+ 
  |
+ 
  ------ 容器型Drawable（可对内容进行缩放）
+ 
   　　　　|
+  
   　　　　--- 视图型Drawable（存放失败图片）
 
 （该例位于`com.facebook.drawee.generic.GenericDraweeHierarchy`的类注释中）
