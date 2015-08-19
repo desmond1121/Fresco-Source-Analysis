@@ -163,7 +163,9 @@ public static Matrix getTransform(
 **AutoRotateDrawable**：提供内容动态旋转的容器。
 **OrientedDrawable**：可以将内容Drawable以一个特定的角度绘制的容器。
 **RoundedCornersDrawable**：可以将内容图片变成圆角矩形的容器。
-**MatrixDrawable**：可以为内容应用变形矩阵的容器。
+**MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。
+
+***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
 
 ###视图型Drawable
 
