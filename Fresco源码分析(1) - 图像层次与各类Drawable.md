@@ -1,20 +1,18 @@
-#Fresco源码分析(1) - Drawable层次
+#Fresco源码分析(1) - 图像层次与各类Drawable
 ---
-
-@(Android技术)[源码阅读|Fresco]
 
 > 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj)
 
 
-首先介绍几种Fresco中实现几个的Drawable，了解它们会帮助你理解Fresco加载图像的原理。它们都直接或间接继承了`Drawable`，但是各自的功能是不一样的。经过总结，我认为其中一共有三种功能的Drawable：层次型、容器型和视图型。
+首先介绍几种Fresco中的图像层次，了解它们会帮助你理解Fresco加载图像的原理。
 
 ###引论：给图像分层次是什么作用？
 
 如果你使用过Fresco这个强大的库之后，你就知道它可以在一个图像的加载、绘制过程中实现极大的定制化。你可以设置进度条来显示图片加载/下载的进度，可以设置占位图等到图片加载/下载成功后再显示目标图片，可以让在加载/下载失败后显示失败图片（更多功能参考[Fresco中文文档](http://fresco-cn.org/docs/)）。Fresco将进度条、占位图、失败图都作为图像的一层视图来管理，这部分仅仅负责视图层次绘制，将负责视图功能部分与逻辑部分尽可能实现解耦。
 
-直接上源码的一个视图例子就好理解了，作者进行了适当修改与翻译。
+图像层次要和Drawable一次分析。Fresco中定义了许多Drawable，它们都直接或间接继承了`Drawable`，但是各自的功能是不一样的。经过总结，我认为其中一共有三种功能的Drawable：层次型、容器型和视图型。直接上源码的一个视图例子就好理解了，作者进行了适当修改与翻译。
 
- o 层次型Drawable（维持图层）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/> |　　　　|<br/>|　　　　--- 视图型Drawable（存放占位图）<br/> |<br/> ------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　----- 容器型Drawable（可多次设置内容）<br/> |　　　　　　　|<br/> |　　　　　　　--- 视图型Drawable（存放目标图片）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　--- 视图型Drawable（存放重试图片）<br/>|<br/>------ 容器型Drawable（可对内容进行缩放）<br/> 　　　　|<br/>  　　　　--- 视图型Drawable（存放失败图片）
+ o 层次型Drawable（维持图层）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/> |　　　　|<br/>|　　　　--- 视图型Drawable（存放占位图）<br/> |<br/> ------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　----- 容器型Drawable（可多次设置内容）<br/> |　　　　　　　|<br/> |　　　　　　　--- 视图型Drawable（存放目标显示图片）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　--- 视图型Drawable（存放重试图片）<br/>|<br/>------ 容器型Drawable（可对内容进行缩放）<br/> 　　　　|<br/>  　　　　--- 视图型Drawable（存放失败图片）
 
 （该例位于`com.facebook.drawee.generic.GenericDraweeHierarchy`的类注释中）
 
@@ -162,7 +160,6 @@ public static Matrix getTransform(
 **SettableDrawable**：可以多次设置内容Drawable的容器，多用在目标图片的图层中。
 **AutoRotateDrawable**：提供内容动态旋转的容器。
 **OrientedDrawable**：可以将内容Drawable以一个特定的角度绘制的容器。
-**RoundedCornersDrawable**：可以将内容图片变成圆角矩形的容器。
 **MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。
 
 ***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
