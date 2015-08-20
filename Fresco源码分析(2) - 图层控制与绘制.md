@@ -1,12 +1,10 @@
-#Fresco源码分析(2) - 图层控制与绘制
+#Fresco源码分析(2) - 图层控制
 
 > 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj) 
 
-在本篇的内容中，作者将初步介绍Fresco是怎么将Drawable层次绘制到`DraweeView`中的。
+在本篇的内容中，作者将初步介绍Fresco是怎么构建图像层次的。
 
-##图层控制逻辑
-
-###引言
+##引言
 
 `DraweeHierarchy`是所有`Hierarchy`的父接口，它内部只提供了一个基本而又不可缺失的功能：获取图层树的父节点图层。不过仅仅只有这个功能是不够的，Fresco紧接着用接口`SettableHierarchy`来继承它，声明一些具体的功能：
 
@@ -17,9 +15,10 @@
 - `void setRetry(Throwable throwable)` 图片加载失败但是还希望再次尝试加载时的回调，可以用来显示重试提示图片。参数为加载失败时抛出的异常。
 - `void setControllerOverlay(Drawable drawable)` 由于特殊原因要用指定图层覆盖已有图层时的回调，传入的参数会显示在`ArrayDrawable`的最上方。
 
+这几个函数都会在后面起到比较大的作用。
 在接下来的内容中会介绍本节的主角：**GenericDraweeHierarchy**。它实现了`SettableHierarchy`接口，你可以从这个类中看到大部分Fresco处理图层的逻辑。
 
-###1. 图层封装者 - GenericDraweeHierarchy
+##图层封装者 - GenericDraweeHierarchy
 
 首先看几个成员变量：
 
@@ -40,7 +39,7 @@
 
 简洁明了有木有！没错，这个`GenericDraweeHierarchy`就是封装与维护Drawable层次的家伙！你需要牢记以上这六种图层名字，它是Fresco的视图显示中最主要的六个图层。
 
-####1.1 建造者模式
+###建造者模式
 
 如果你经常使用Fresco，你就会发现它的设计之中充斥着建造者模式。由于Fresco中的对象初始化经常是比较复杂的，建造者模式能为开发者在创建实例上省去很多功夫。
 
@@ -52,18 +51,18 @@
 
 这个Builder内部有大量的getter与setter，你可以为每个图层指定Drawable、ScaleType，以及目标显示图层还可以设置Matrix、Focus（配合`ScaleType`为`FOCUS_CROP`时使用）、ColorFilter。
 
-####1.2 初始化图层
+###初始化图层
 
 我们来看一下`GenericDraweeHierarchy`，从中能够理解Fresco是怎么初始化图层的。
 
 ```java
   GenericDraweeHierarchy(GenericDraweeHierarchyBuilder builder) {
     mResources = builder.getResources();
+    // 获取圆角参数
     mRoundingParams = builder.getRoundingParams();.
     // 初始化图层数为0
     int numLayers = 0;
-    
-    // backgrounds
+
     int numBackgrounds = (builder.getBackgrounds() != null) ? builder.getBackgrounds().size() : 0;
     int backgroundsIndex = numLayers;
     numLayers += numBackgrounds;
@@ -86,7 +85,7 @@
 
 在这段代码中，它对占位图层进行了以下处理：
 1. 获取图层Drawable资源，如果没有设置，它将创建一个透明图层。
-2. 根据圆角参数对图片进行圆角处理（具体机制将在[Fresco源码分析(3) - 处理圆角图片][3]中分析。
+2. 根据圆角参数对图片进行圆角处理。
 3. 将待显示的Drawable资源包装进一个`ScaleTypeDrawable`中，处理缩放逻辑（关于`ScaleTypeDrawable`可以参考[Fresco源码分析(1) - 图像层次与各类Drawable][1]）。
 4. 记录图层在`ArrayDrawable`中的index，图层数量加一。
 
@@ -138,15 +137,9 @@
     if (mPlaceholderImageIndex >= 0) {
       layers[mPlaceholderImageIndex] = placeholderImageBranch;
     }
-    if (mActualImageIndex >= 0) {
-      layers[mActualImageIndex] = actualImageBranch;
-    }
-    if (mProgressBarImageIndex >= 0) {
-      layers[mProgressBarImageIndex] = progressBarImageBranch;
-    }
-    if (mRetryImageIndex >= 0) {
-      layers[mRetryImageIndex] = retryImageBranch;
-    }
+    
+    // 各图层赋值
+    
     if (mFailureImageIndex >= 0) {
       layers[mFailureImageIndex] = failureImageBranch;
     }
@@ -157,6 +150,7 @@
           layers[overlaysIndex + index++] = overlay;
         }
       }
+      //按下时加在图片上的的覆盖图层
       if (builder.getPressedStateOverlay() != null) {
         layers[overlaysIndex + index++] = builder.getPressedStateOverlay();
       }
@@ -164,16 +158,19 @@
     if (mControllerOverlayIndex >= 0) {
       layers[mControllerOverlayIndex] = mEmptyControllerOverlayDrawable;
     }
+```
+这段代码的意思也是简明易懂，它新建个Drawable数组，将存在的图层依次向里面添加。如果你了解了上一章的内容，你自然知道接下来做的是什么：用这个数组来初始化`FadeDrawable`，初始化整个视图层次。接着对图层做圆角处理（需要的话）。
 
-    // fade drawable composed of branches
+```
+    // 初始化FadeDrawable
     mFadeDrawable = new FadeDrawable(layers);
     mFadeDrawable.setTransitionDuration(builder.getFadeDuration());
 
-    // rounded corners drawable (optional)
+    // 圆角处理
     Drawable maybeRoundedDrawable =
         maybeWrapWithRoundedOverlayColor(mRoundingParams, mFadeDrawable);
 
-    // top-level drawable
+    // 包装成RootDrawable实例
     mTopLevelDrawable = new RootDrawable(maybeRoundedDrawable);
     mTopLevelDrawable.mutate();
 
@@ -181,13 +178,29 @@
   }
 
 ```
+在`resetFade()`中将占位图 、背景图层、覆盖图层显示出来。
 
-***需要注意的一点：一个Drawable实例只能与一个DraweeHierarchy绑定！如果绑定了多个DraweeHierarchy，会出问题。*** 
+### 需要注意的一点：一个Drawable实例只能与一个DraweeHierarchy绑定！
 
+如果绑定了多个DraweeHierarchy，会出问题。由于在初始化过程中它将Drawable数组赋值给`FadeDrawable`，而`FadeDrawable`又继承于`ArrayDrawable`，它会在初始化的时候为每个数组Drawable的`Drawable.Callback`设置为自己，若是`TransfromAwareDrawable`的话还会设置自己为`TransformCallback`。而我们可以在它的`setDrawable(int index, Drawable drawable)`函数中看到这么一段代码：
 
+```java
+    if (drawable != mLayers[index]) {
+      if (mIsMutated) {
+        drawable = drawable.mutate();
+      }
+      DrawableUtils.setCallbacks(mLayers[index], null, null);
+      DrawableUtils.setCallbacks(drawable, null, null);
+      DrawableUtils.setDrawableProperties(drawable, mDrawableProperties);
+      DrawableUtils.copyProperties(drawable, mLayers[index]);
+      DrawableUtils.setCallbacks(drawable, this, this);
+      mIsStatefulCalculated = false;
+      mLayers[index] = drawable;
+      invalidateSelf();
+    }
+```
+可以看出，在替换图片时，它会将原来Drawable的这些回调都设置为null。由此很可能会导致Bug，请参考我的一篇翻译文章：[Android LayerDrawable 和 Drawable.Callback](https://github.com/bboyfeiyu/android-tech-frontier/blob/master/issue-24/Android%20LayerDrawable%20%E5%92%8C%20Drawable.Callback.md)。
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md "第一篇"
 
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20%E5%9B%BE%E5%B1%82%E6%8E%A7%E5%88%B6%E4%B8%8E%E7%BB%98%E5%88%B6.md "第二篇"
-
-[3]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20%E5%A4%84%E7%90%86%E5%9C%86%E8%A7%92%E5%9B%BE%E7%89%87.md "第三篇"

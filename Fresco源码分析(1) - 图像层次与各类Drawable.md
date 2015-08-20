@@ -24,20 +24,9 @@
 
 ####ArrayDrawable
 
-`ArrayDrawable`内部存储着一个Drawable数组，工作原理与Android内置的`LayerDrawable`极其相似，我们可以看它的绘制函数：
-
-```java
-  @Override
-  public void draw(Canvas canvas) {
-    for (int i = 0; i < mLayers.length; i++) {
-      mLayers[i].draw(canvas);
-    }
-  }
-```
-
-可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。它与`LayerDrawable`不同的点就在于它**不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数**。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
-
-可能你会想：不对呀，我不希望这些图层被一下子按顺序画出来呀！实际上`ArrayDrawable`只负责图层的维护，具体的控制内容放在了`HierachyController`中了，我会在后面的内容中进行分析。
+`ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点有两处：
+- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会跳过暂时不需要绘制的图层（通过设置图层透明度）；
+- 在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
 
 ####FadeDrawable
 
@@ -57,7 +46,8 @@
  
 **ForwardingDrawable**
 
-`ForwardingDrawable`通俗的来说就是图片容器。它内部维护一个`Drawable`变量`mCurrentDelegate`，将Drawable的基本函数以及一些回调函数传递给目标图片，并在`draw(Canvas)`函数中调用`mCurrentDeletate.draw(Canvas)`函数将目标图片绘制出来。这个类本身仅仅起到包装作用，乍一看没什么了不起的，但是可以通过继承它并对图片处理做一些封装（如缩放、变形等）来达到一些想要的效果。
+`ForwardingDrawable`通俗的来说就是图片容器。它内部维护一个`Drawable`变量`mCurrentDelegate`，将Drawable的基本函数以及一些回调函数传递给目标图片，并在`draw(Canvas)`函数中调用`mCurrentDeletate.draw(Canvas)`函数将目标图片绘制出来。
+它可以通过`getCurrent()`来获取容器内容，起到一个相当于是传递树的作用。它是所有容器型Drawable的基类，以下介绍几个它的子类，他们实现了不同功能的容器包装。
 
 **ScaleTypeDrawable**
 
@@ -156,17 +146,17 @@ public static Matrix getTransform(
 ```
 我们可以看到它将矩阵应用到`Canvas`中，并调用`ForwardingDrawable`的`draw(Canvas)`让它将目标视图绘制出来，之后还原Canvas的缩放属性防止累加缩放。
 
-*其他容器型Drawable实现原理基本类似，就是功能不同，就不再分析具体实现，仅作功能介绍。*
+*暂时先介绍各类容器Drawable的功能，为方便后续理解。待分析完Fresco的架构之后再为分析。*
 **SettableDrawable**：可以多次设置内容Drawable的容器，多用在目标图片的图层中。
 **AutoRotateDrawable**：提供内容动态旋转的容器。
 **OrientedDrawable**：可以将内容Drawable以一个特定的角度绘制的容器。
-**MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。
-
-***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
+**MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
+**RoundedCornersDrawable**：可以将内容的边界修剪成圆角矩形（目前版本暂不支持）或用实心的圆角矩形覆盖内容的容器。
+**GenericDraweeHierarchy.RootDrawable**：专门用于顶层图层的容器。
 
 ###视图型Drawable
 
-大多数情况下，Fresco用于表现图片的视图型Drawable使用的就是Android原生`Drawable`来做图像的载体。不过也有一个例外：
+大多数情况下，Fresco用于表现图片的视图型Drawable使用的就是Android原生`Drawable`来做图像的载体。不过也有两个例外：
 
 **ProgressBarDrawable**
 
@@ -193,6 +183,54 @@ public static Matrix getTransform(
 ```
 可以看出，它先将整个进度条填充满`backgroundColor`颜色(可以通过`setBackgroundColor`设置)，再将进度覆盖区域矩形填充满`color`颜色(可以通过`setColor`设置)。
 
+**RoundedBitmapDrawable**
+
+这个Drawable与上面的容器型`RoundedCornersDrawable`有几个区别：
+
+`RoundedBitmapDrawable`是将自身内容修剪成圆角矩形边绘制出来，并且可以使用Bitmap作为对象，返回一个`BitmapDrawable`。而`RoundedCornersDrawable`是将容器内容修剪成圆角矩形边，并且可以选择是否用指定颜色覆盖容器内容，可以使用任何Drawable当做容器。
+
+*待分析完Fresco的架构之后，会回来分析圆角图片的实现机制。它与正常的使用Xfermode实现方式不同。*
+
+实际上这两个类的功能是有一定重合的，我认为是由于`RoundedCornerDrawable`目前只能做到用圆角矩形覆盖内容，而无法将内容修剪成圆角矩形，所以才使用了`RoundedBitmapDrawable`。关于`RoundedCornersDrawable`的功能Fresco也在改进中。期待后续它能将两个功能合并起来。
+
+### 特殊Drawable - TransformAwareDrawable 和 VisibilityAwareDrawable
+
+为什么说它们特殊呢，因为他们只是接口！
+
+`TransformAwareDrawable `要和`TransfromCallback`一起使用。`TransformAwareDrawable `的作用很简单，就是提供设置`TransfromCallback`的回调函数，那我们来看看`TransfromCallback`的作用是什么：
+
+```
+public interface TransformCallback {
+
+  // 获取已经应用在自身的变换Matrix，储存在transfrom中。
+  public void getTransform(Matrix transform);
+
+  // 获取根节点边界，储存在bounds中。
+  public void getRootBounds(RectF bounds);
+}
+```
+
+之所以要设置这个回调，是因为本篇中的Drawable是有层次的。如果B 是 A的子图层，那应用在A上的变换矩阵自然应该应用到B上，所以提供这个回调可以让B获取应用在A上的变换矩阵，从而正确地进行绘制。
+
+**在本篇文章中出现的所有Drawable都实现了`TransformAwareDrawable `与`TransfromCallback`。** 可以在相当于视图顶层的`ArrayDrawable`中的`getTransfrom`中看出它的工作机制（实际上除了个别自身有缩放的图层如`ScaleTypeDrawable`, `MatrixDrawable`外的实现都是这样）：
+
+```java
+  @Override
+  public void getTransform(Matrix transform) {
+    if (mTransformCallback != null) {
+      mTransformCallback.getTransform(transform);
+    } else {
+      transform.reset();
+    }
+  }
+```
+即如果还有父图层（在Fresco中，`TransfromCallback`都是设置成父图层）的话，那么就调用父图层的`getTransfrom`方法，如果没有，则设置成单元矩阵（不变换）。
+
+在`ScaleTypeDrawable`和`MatrixDrawable`中会将自身的变换矩阵通过`Matrix.confat(Matrix m)`传给`transform`。
+
+如此一来就实现了变换矩阵向下传递的功能。
+
+而`VisibilityAwareDrawable`的意思就更好理解了，它是与`VisibilityCallback`搭配使用的，它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
 
 ##参考文献：
 
