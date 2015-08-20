@@ -1,4 +1,4 @@
-#Fresco源码分析(2) - 图层控制
+#Fresco源码分析(2) - 图层构建过程
 
 > 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj) 
 
