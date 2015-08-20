@@ -28,7 +28,7 @@
 
 ####FadeDrawable
 
-我们并不希望视图一股脑将所有的图层都画出来，所以Fresco实现了`FadeDrawable`。它的绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会**跳过暂时不需要绘制的图层（通过设置图层透明度为0来实现）**；
+我们并不希望视图一股脑将所有的图层都画出来，所以Fresco实现了`FadeDrawable`。它的绘制顺序虽然是数组顺序，但是在绘制时会**跳过暂时不需要绘制的图层（通过设置图层透明度为0来实现）**；
 
 `FadeDrawable`继承了`ArrayDrawable`。它除了具有`ArrayDrawable`本身的功能之外，还提供隐藏/显示图层的功能（可设置渐变）。具体的几个核心函数有：
  * `setTransitionDuration(int durationMs)` 设置隐藏/显示图层渐变动画时间（默认为300ms）。
