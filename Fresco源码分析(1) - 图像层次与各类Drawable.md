@@ -25,7 +25,7 @@
 ####ArrayDrawable
 
 `ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点有两处：
-- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会**跳过暂时不需要绘制的图层（通过设置图层透明度）**；
+- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会**跳过暂时不需要绘制的图层（通过设置图层透明度为0来实现）**；
 - 在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
 
 ####FadeDrawable
