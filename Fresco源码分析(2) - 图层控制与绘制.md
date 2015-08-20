@@ -84,6 +84,7 @@
 ```
 
 在这段代码中，它对占位图层进行了以下处理：
+
 1. 获取图层Drawable资源，如果没有设置，它将创建一个透明图层。
 2. 根据圆角参数对图片进行圆角处理。
 3. 将待显示的Drawable资源包装进一个`ScaleTypeDrawable`中，处理缩放逻辑（关于`ScaleTypeDrawable`可以参考[Fresco源码分析(1) - 图像层次与各类Drawable][1]）。
