@@ -6,7 +6,7 @@
 
 ##图层控制逻辑
 
-###引论
+###引言
 
 `DraweeHierarchy`是所有`Hierarchy`的父接口，它内部只提供了一个基本而又不可缺失的功能：获取图层树的父节点图层。不过仅仅只有这个功能是不够的，Fresco紧接着用接口`SettableHierarchy`来继承它，声明一些具体的功能：
 
@@ -19,13 +19,175 @@
 
 在接下来的内容中会介绍本节的主角：**GenericDraweeHierarchy**。它实现了`SettableHierarchy`接口，你可以从这个类中看到大部分Fresco处理图层的逻辑。
 
-###GenericDraweeHierarchy
+###1. 图层封装者 - GenericDraweeHierarchy
+
+首先看几个成员变量：
+
+```java
+  /* 占位图层 */
+  private final int mPlaceholderImageIndex;
+  /* 进度条图层 */
+  private final int mProgressBarImageIndex;
+  /* 目标显示图层 */
+  private final int mActualImageIndex;
+  /* 重试图层 */
+  private final int mRetryImageIndex;
+  /* 失败图层 */
+  private final int mFailureImageIndex;
+  /* 控制覆盖图层 */
+  private final int mControllerOverlayIndex;
+```
+
+简洁明了有木有！没错，这个`GenericDraweeHierarchy`就是封装与维护Drawable层次的家伙！你需要牢记以上这六种图层名字，它是Fresco的视图显示中最主要的六个图层。
+
+####1.1 建造者模式
+
+如果你经常使用Fresco，你就会发现它的设计之中充斥着建造者模式。由于Fresco中的对象初始化经常是比较复杂的，建造者模式能为开发者在创建实例上省去很多功夫。
+
+`1GenericDraweeHierarchy`的建造者是`GenericDraweeHierarchyBuilder`。它内部维持着许多图层属性，主要有这两种：
+- 默认的变量（渐变动画时间、`ScaleType`）
+- 程序的Resources实例
+- 圆角矩形容器的一些参数
+- 要放到每个图层容器中的Drawable实例及图层要应用的`ScaleType`、`Matrix`等等。
+
+这个Builder内部有大量的getter与setter，你可以为每个图层指定Drawable、ScaleType，以及目标显示图层还可以设置Matrix、Focus（配合`ScaleType`为`FOCUS_CROP`时使用）、ColorFilter。
+
+####1.2 初始化图层
+
+我们来看一下`GenericDraweeHierarchy`，从中能够理解Fresco是怎么初始化图层的。
+
+```java
+  GenericDraweeHierarchy(GenericDraweeHierarchyBuilder builder) {
+    mResources = builder.getResources();
+    mRoundingParams = builder.getRoundingParams();.
+    // 初始化图层数为0
+    int numLayers = 0;
+    
+    // backgrounds
+    int numBackgrounds = (builder.getBackgrounds() != null) ? builder.getBackgrounds().size() : 0;
+    int backgroundsIndex = numLayers;
+    numLayers += numBackgrounds;
+```
+在这段代码中我们可以看到最开始初始化的是背景图层（顶层图层），会根据是否传入背景图层来判断图层数是否增减。再接着往下看：
+```
+    Drawable placeholderImageBranch = builder.getPlaceholderImage();
+    if (placeholderImageBranch == null) {
+      placeholderImageBranch = getEmptyPlaceholderDrawable();
+    }
+    placeholderImageBranch = maybeApplyRoundingBitmapOnly(
+        mRoundingParams,
+        mResources,
+        placeholderImageBranch);
+    placeholderImageBranch = maybeWrapWithScaleType(
+        placeholderImageBranch,
+        builder.getPlaceholderImageScaleType());
+    mPlaceholderImageIndex = numLayers++;
+```
+
+在这段代码中，它对占位图层进行了以下处理：
+1. 获取图层Drawable资源，如果没有设置，它将创建一个透明图层。
+2. 根据圆角参数对图片进行圆角处理（具体机制将在[Fresco源码分析(3) - 处理圆角图片][3]中分析。
+3. 将待显示的Drawable资源包装进一个`ScaleTypeDrawable`中，处理缩放逻辑（关于`ScaleTypeDrawable`可以参考[Fresco源码分析(1) - 图像层次与各类Drawable][1]）。
+4. 记录图层在`ArrayDrawable`中的index，图层数量加一。
+
+我们再看看目标显示图层的处理逻辑，与占位图层的处理有什么区别：
+```
+    Drawable actualImageBranch = null;
+    mActualImageSettableDrawable = new SettableDrawable(mEmptyActualImageDrawable);
+    actualImageBranch = mActualImageSettableDrawable;
+    actualImageBranch = maybeWrapWithScaleType(
+        actualImageBranch,
+        builder.getActualImageScaleType(),
+        builder.getActualImageFocusPoint());
+    actualImageBranch = maybeWrapWithMatrix(
+        actualImageBranch,
+        builder.getActualImageMatrix());
+    actualImageBranch.setColorFilter(builder.getActualImageColorFilter());
+    mActualImageIndex = numLayers++;
+```
+
+与占位图层有区别的是它在显示图上多加了一了`SettableDrawable`容器（正常图层只有一个`ScaleTypeDrawable`容器），没有进行圆角处理。由于可以后续改变图像内容，它**直接使用了默认的透明图来初始化图层**，而且它还拥有ColorFilter、Matrix等特权。
+
+需要注意的一点：在不显式指定图层内容的时候，**占位图层、目标显示图层、控制覆盖图层将会创建透明图层实例，其他图层不会创建实例。**  并且只有在指定内容的时候图层数量才会增加，除此以外其他图层与占位图、目标图层的初始化没有什么区别。
+
+在初始化完基本图层之后，那我们接着看余下初始化过程：
+```
+    // overlays
+    int overlaysIndex = numLayers;
+    int numOverlays =
+        ((builder.getOverlays() != null) ? builder.getOverlays().size() : 0) +
+            ((builder.getPressedStateOverlay() != null) ? 1 : 0);
+    numLayers += numOverlays;
+
+    // controller overlay
+    mControllerOverlayIndex = numLayers++;
+```
+
+这部分是初始化覆盖图层及控制覆盖图层。如果没有设置覆盖图层，他们不会被初始化。不过控制覆盖图层是会被初始化成透明图层的。
+
+```
+    // array of layers
+    Drawable[] layers = new Drawable[numLayers];
+    if (numBackgrounds > 0) {
+      int index = 0;
+      for (Drawable background : builder.getBackgrounds()) {
+        layers[backgroundsIndex + index++] =
+            maybeApplyRoundingBitmapOnly(mRoundingParams, mResources, background);
+      }
+    }
+    if (mPlaceholderImageIndex >= 0) {
+      layers[mPlaceholderImageIndex] = placeholderImageBranch;
+    }
+    if (mActualImageIndex >= 0) {
+      layers[mActualImageIndex] = actualImageBranch;
+    }
+    if (mProgressBarImageIndex >= 0) {
+      layers[mProgressBarImageIndex] = progressBarImageBranch;
+    }
+    if (mRetryImageIndex >= 0) {
+      layers[mRetryImageIndex] = retryImageBranch;
+    }
+    if (mFailureImageIndex >= 0) {
+      layers[mFailureImageIndex] = failureImageBranch;
+    }
+    if (numOverlays > 0) {
+      int index = 0;
+      if (builder.getOverlays() != null) {
+        for (Drawable overlay : builder.getOverlays()) {
+          layers[overlaysIndex + index++] = overlay;
+        }
+      }
+      if (builder.getPressedStateOverlay() != null) {
+        layers[overlaysIndex + index++] = builder.getPressedStateOverlay();
+      }
+    }
+    if (mControllerOverlayIndex >= 0) {
+      layers[mControllerOverlayIndex] = mEmptyControllerOverlayDrawable;
+    }
+
+    // fade drawable composed of branches
+    mFadeDrawable = new FadeDrawable(layers);
+    mFadeDrawable.setTransitionDuration(builder.getFadeDuration());
+
+    // rounded corners drawable (optional)
+    Drawable maybeRoundedDrawable =
+        maybeWrapWithRoundedOverlayColor(mRoundingParams, mFadeDrawable);
+
+    // top-level drawable
+    mTopLevelDrawable = new RootDrawable(maybeRoundedDrawable);
+    mTopLevelDrawable.mutate();
+
+    resetFade();
+  }
+
+```
+
+***需要注意的一点：一个Drawable实例只能与一个DraweeHierarchy绑定！如果绑定了多个DraweeHierarchy，会出问题。*** 
 
 
 
-***需要注意的几点：***
--  一个Drawable实例只能与一个DraweeHierarchy绑定！如果绑定了多个DraweeHierarchy，会出问题。
--  如果你不显式地设置这些图层，它们是不会被创造的，**除了占位图层之外**，它会默认创造一个透明图层。
--  如果设置了背景图层，它会一直显示。
+[1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md "第一篇"
 
+[2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20%E5%9B%BE%E5%B1%82%E6%8E%A7%E5%88%B6%E4%B8%8E%E7%BB%98%E5%88%B6.md "第二篇"
 
+[3]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20%E5%A4%84%E7%90%86%E5%9C%86%E8%A7%92%E5%9B%BE%E7%89%87.md "第三篇"
