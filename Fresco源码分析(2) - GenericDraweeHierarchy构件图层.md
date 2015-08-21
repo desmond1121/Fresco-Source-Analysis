@@ -1,4 +1,4 @@
-#Fresco源码分析(2) - 图层构建过程
+#Fresco源码分析(2) - GenericDraweeHierarchy构件图层
 
 > 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj) 
 
@@ -9,7 +9,7 @@
 `DraweeHierarchy`是所有`Hierarchy`的父接口，它内部只提供了一个基本而又不可缺失的功能：获取图层树的父节点图层。不过仅仅只有这个功能是不够的，Fresco紧接着用接口`SettableHierarchy`来继承它，声明一些具体的功能：
 
 - `void reset()` 重置所有图层（慎用）
-- `void setImage(Drawable drawable, float progress, boolean immediate)` 设置目标显示图片，`progress`表示图片的加载质量（在渐进式图中使用），`immediate`设置为true时图片会马上显示（而不是有一个渐变的过程）。
+- `void setImage(Drawable drawable, float progress, boolean immediate)` 设置目标显示图片，`progress`表示图片的加载质量（在渐进式图中使用），`immediate`设置为true时图片会马上显示（而不是有一个渐变的过程）。**但是如果你使用这个函数来设置目标显示图片，将意味着你在加载这张图片的时候放弃了Fresco的Image Pipeline加载图片的方式。**
 - `void setProgress(float progress, boolean immediate)`  设置`ProgressBar`的进度。当`progress`为1时会隐藏`ProgressBar`，同样`immediate`设置为true时进度条会马上消失。
 - `void setFailure(Throwable throwable)` 图片加载失败的回调，可以用来显示失败提示图片。参数为加载失败时抛出的异常。
 - `void setRetry(Throwable throwable)` 图片加载失败但是还希望再次尝试加载时的回调，可以用来显示重试提示图片。参数为加载失败时抛出的异常。
@@ -19,6 +19,8 @@
 在接下来的内容中会介绍本节的主角：**GenericDraweeHierarchy**。它实现了`SettableHierarchy`接口，你可以从这个类中看到大部分Fresco处理图层的逻辑。
 
 ##图层封装者 - GenericDraweeHierarchy
+
+请记住这句话：**GenericDraweeHierarchy**只是负责装载每个图层信息的载体。**如果你直接使用它去显示图片，那就意味着你将放弃Fresco提供的加载与缓存机制。**你可以认为这么做之后`SimpleDraweeView`就退化成了一个简单的`ImageView`，只会将`ArrayDrawable`中的所有设置的图片按顺序显示出来。具体的细节我们将在[Fresco源码分析(3) - DraweeView显示图层树][3]中讨论。
 
 首先看几个成员变量：
 
@@ -84,11 +86,10 @@
 ```
 
 在这段代码中，它对占位图层进行了以下处理：
-
-1. 获取图层Drawable资源，如果没有设置，它将创建一个透明图层。
-2. 根据圆角参数对图片进行圆角处理。
-3. 将待显示的Drawable资源包装进一个`ScaleTypeDrawable`中，处理缩放逻辑（关于`ScaleTypeDrawable`可以参考[Fresco源码分析(1) - 图像层次与各类Drawable][1]）。
-4. 记录图层在`ArrayDrawable`中的index，图层数量加一。
+- 获取图层Drawable资源，如果没有设置，它将创建一个透明图层。
+- 根据圆角参数对图片进行圆角处理。
+- 将待显示的Drawable资源包装进一个`ScaleTypeDrawable`中，处理缩放逻辑（关于`ScaleTypeDrawable`可以参考[Fresco源码分析(1) - 图像层次与各类Drawable][1]）。
+- 记录图层在`ArrayDrawable`中的index，图层数量加一。
 
 我们再看看目标显示图层的处理逻辑，与占位图层的处理有什么区别：
 ```
@@ -205,3 +206,5 @@
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md "第一篇"
 
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20%E5%9B%BE%E5%B1%82%E6%8E%A7%E5%88%B6%E4%B8%8E%E7%BB%98%E5%88%B6.md "第二篇"
+
+[3]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20DraweeView%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%B1%82%E6%A0%91.md "第三篇"
