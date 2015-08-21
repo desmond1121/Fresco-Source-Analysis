@@ -24,11 +24,11 @@
 
 ####ArrayDrawable
 
-`ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点就在于在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
+`ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点有两处：
+- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会跳过暂时不需要绘制的图层（通过设置图层透明度）；
+- 在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
 
 ####FadeDrawable
-
-我们并不希望视图一股脑将所有的图层都画出来，所以Fresco实现了`FadeDrawable`。它的绘制顺序虽然是数组顺序，但是在绘制时会**跳过暂时不需要绘制的图层（通过设置图层透明度为0来实现）**；
 
 `FadeDrawable`继承了`ArrayDrawable`。它除了具有`ArrayDrawable`本身的功能之外，还提供隐藏/显示图层的功能（可设置渐变）。具体的几个核心函数有：
  * `setTransitionDuration(int durationMs)` 设置隐藏/显示图层渐变动画时间（默认为300ms）。
@@ -39,7 +39,8 @@
  * `fadeToLayer(int index)` 显示指定图层同时隐藏其他图层
  * `fadeUpToLayer(int index)` 隐藏数组下标<=index的图层
  
-它内部维护着一个boolean数组`isLayerOn`来维持图层的渐隐/渐显状态，当`isLayerOn[index]`为true时说明图层正在渐显（或已经显示），为false时说明图层正在渐隐（或已经隐藏）。在控制图层的可见性上，直接设置`Alpha`为0或255的优先度比设置`isLayerOn`高。
+它内部维护着一个boolean数组来维持需要显示的图层（可以调用`isLayerOn(int inxex)`查看指定图层是否显示）。
+ 
  
 ###容器型Drawable
  
@@ -123,7 +124,7 @@ public static Matrix getTransform(
 	return transform;
 }
 ```
-其他具体的`ScaleType`处理就不赘述了，有兴趣的同学可以自己看源码再研究。
+其他具体的`ScaleType`处理就不赘述了，有兴趣的同学可以自己看源码再研究。**默认的ScaleType是CENTER_CROP。**
 
 在计算好矩阵之后，我们来看一下这个容器是怎么将它的内容绘制出来的：
 
@@ -229,7 +230,11 @@ public interface TransformCallback {
 
 如此一来就实现了变换矩阵向下传递的功能。
 
-而`VisibilityAwareDrawable`的意思就更好理解了，它是与`VisibilityCallback`搭配使用的，它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
+而`VisibilityAwareDrawable`的意思就更好理解了，它是与`VisibilityCallback`搭配使用的。它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）和在自身绘制时发生通知的回调(`onDraw()`)。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
+
+##类图
+
+![Class Diagram](http://img.blog.csdn.net/20150821184145929)
 
 ##参考文献：
 
