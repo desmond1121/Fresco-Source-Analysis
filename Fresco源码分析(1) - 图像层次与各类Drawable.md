@@ -234,6 +234,8 @@ public interface TransformCallback {
 
 ##类图
 
+由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
+
 ![Class Diagram](http://img.blog.csdn.net/20150821184145929)
 
 ##参考文献：

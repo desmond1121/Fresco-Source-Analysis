@@ -203,6 +203,12 @@
 ```
 可以看出，在替换图片时，它会将原来Drawable的这些回调都设置为null。由此很可能会导致Bug，请参考我的一篇翻译文章：[Android LayerDrawable 和 Drawable.Callback](https://github.com/bboyfeiyu/android-tech-frontier/blob/master/issue-24/Android%20LayerDrawable%20%E5%92%8C%20Drawable.Callback.md)。
 
+##类图
+
+由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
+
+![Class Diagram](http://img.blog.csdn.net/20150822114822074)
+
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md "第一篇"
 
 [3]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20DraweeView%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%B1%82%E6%A0%91.md "第三篇"
