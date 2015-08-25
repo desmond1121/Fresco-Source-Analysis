@@ -9,13 +9,13 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 `DraweeView<DH extends DraweeHierarchy>`是Fresco视图中的基类，使用的泛型必须是`DraweeHierarchy`，它继承了`ImageView`。
 
-`DraweeView`内部的函数不多，**它们全部都是通过DraweeHolder相应函数实现的。**主要有以下这几个：
+`DraweeView`内部的函数不多，**它们全部都是通过DraweeHolder的相应函数实现的。**主要有以下这几个：
 - `void init(Context context)` 初始化`DraweeHolder`；
 - `void setHierarchy(DH hierarchy)` 设置图层树，会调用 `super.setImageDrawable(mDraweeHolder.getTopLevelDrawable())`将图层树显示出来；
 - `void setController(@Nullable DraweeController draweeController)` 设置`DraweeController`，像`setHierarchy`一样同样也会显示图层树；
 - `Drawable getTopLevelDrawable()` 获取顶层图层Drawable；
 - `View`中的`onAttachedToWindow()`、 `onDetachedFromWindow()`、 `onStartTemporaryDetach()`、 `onFinishTemporaryDetach()` 四个回调函数，提供当视图被绑定/解绑到指定布局上时的回调函数，它们会触发`DraweeHolder`的`onDetach()`或`onAttach()`；
-- `onTouchEvent(MotionEvent event)` 提供触屏反应。
+- `void onTouchEvent(MotionEvent event)` 提供触屏反应。
 
 在使用它之前要注意官方的API注释中有这么一段话：
 
@@ -33,7 +33,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 它有几个主要使用的函数：
 - `void setHierarchy(DH hierarchy)` 
-- `void setController(DraweeController draweeController)` 无条件解绑旧的Controller（如果存在的话），并将旧Controller的DraweeHierarchy设置为null；将持有的DraweeHierarchy（如果有的话）赋给新传入的Controller，并绑定新Controller。（**更换Controller确是一个非常耗时的过程，应该尽量避免为视图指定新的Controller，参考[官方文档](http://fresco-cn.org/docs/using-controllerbuilder.html#draweecontroller)）**
+- `void setController(DraweeController draweeController)` 无条件解绑旧的Controller（如果存在的话），并将旧DraweeController的DraweeHierarchy设置为null，并调用`DraweeController.onDetach()`将它变为解除绑定状态；将持有的DraweeHierarchy（如果有的话）赋给新传入的DraweeController并调用`DraweeController.onAttach()`让它变为绑定状态。（**更换DraweeController确是一个非常耗时的过程，应该尽量避免为视图指定新的DraweeController，参考[官方文档](http://fresco-cn.org/docs/using-controllerbuilder.html#draweecontroller)）**
 
 
 ##GenericDraweeView
@@ -48,11 +48,28 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - ``XXXImage`/`XXXImageScaleType` 各图层要显示的Drawable（除了目标显示图层）及它们的`ScaleType`；
 - `RoundingParams`中的参数
 
-在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`。
+在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`使用。
 
 
+##SimpleDraweeView
 
+在SimpleDraweeView中的函数就更少了，可以明确的说，它就只是将GenericDraweeHierarchy显示到UI界面上的空间而已。它比GenericDraweeView多出来的功能就是**它内部提供了最简单的DraweeController实现**。它有两个函数比较需要关注：
 
+- `initialize`函数，这个函数会在`Fresco.initialize`中调用，目的就是初始化DraweeControllerBuilder，用于构建DraweeController。
 
+- `setImageURI` 这个函数我们会经常调用，因此有必要看看它的实现和普通ImageView的`setImageXXX`方法有什么区别：
 
+```java
+  public void setImageURI(Uri uri, @Nullable Object callerContext) {
+    DraweeController controller = mSimpleDraweeControllerBuilder
+        .setCallerContext(callerContext)
+        .setUri(uri)
+        .setOldController(getController())
+        .build();
+    setController(controller);
+  }
+```
 
+我们可以看到是由它所继承的`DraweeView.setController`方法绘制出图层树，而图层树的控制是交由DraweeController去实现的。
+  
+在下一章中，我会详细分析DraweeController是怎么样将图像加载的步骤和图层树绘制绑定到一起的。
