@@ -32,9 +32,10 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 它主要是用来维持`DraweeHierarchy`和`DraweeController`之间的沟通的。通过`create( DH hierarchy, Context context)`来创建实例，`DraweeHierarchy`通过第一个参数赋值，其中第二个参数用于`registerWithContext(Context)`（该函数暂时没有完善好）。
 
 它有几个主要使用的函数：
-- `void setHierarchy(DH hierarchy)` 
+- `void setHierarchy(DH hierarchy)` 将DraweeHierarchy传给持有的DraweeController
 - `void setController(DraweeController draweeController)` 无条件解绑旧的Controller（如果存在的话），并将旧DraweeController的DraweeHierarchy设置为null，并调用`DraweeController.onDetach()`将它变为解除绑定状态；将持有的DraweeHierarchy（如果有的话）赋给新传入的DraweeController并调用`DraweeController.onAttach()`让它变为绑定状态。（**更换DraweeController确是一个非常耗时的过程，应该尽量避免为视图指定新的DraweeController，参考[官方文档](http://fresco-cn.org/docs/using-controllerbuilder.html#draweecontroller)）**
-
+- `void attachController()` 若Controller未绑定，并且已经为它则调用它的
+- `void attachOrDetachController()` 当一下三者
 
 ##GenericDraweeView
 
@@ -50,6 +51,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`使用。
 
+**在GenericDraweeView获取完xml属性之后，它会通过GenericDraweeHierarchyBuilder创造一个与之对应的GenericDraweeHierarchy。具体创造过程请参考：**
 
 ##SimpleDraweeView
 
