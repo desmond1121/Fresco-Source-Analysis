@@ -51,7 +51,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`使用。
 
-**在GenericDraweeView获取完xml属性之后，它会通过GenericDraweeHierarchyBuilder创造一个与之对应的GenericDraweeHierarchy。具体创造过程请参考：**
+**在GenericDraweeView获取完xml属性之后，它会通过`GenericDraweeHierarchyBuilder.build`创造一个与之对应的GenericDraweeHierarchy作为默认使用的图层树。**
 
 ##SimpleDraweeView
 
