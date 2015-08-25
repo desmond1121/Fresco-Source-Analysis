@@ -1,4 +1,4 @@
-#Fresco源码分析(2) - GenericDraweeHierarchy构件图层
+#Fresco源码分析(2) - GenericDraweeHierarchy构建图层
 
 > 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj) 
 
