@@ -14,7 +14,7 @@
 
  o 层次型Drawable（维持图层）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/> |　　　　|<br/>|　　　　--- 视图型Drawable（存放占位图）<br/> |<br/> ------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　----- 容器型Drawable（可多次设置内容）<br/> |　　　　　　　|<br/> |　　　　　　　--- 视图型Drawable（存放目标显示图片）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　--- 视图型Drawable（存放重试图片）<br/>|<br/>------ 容器型Drawable（可对内容进行缩放）<br/> 　　　　|<br/>  　　　　--- 视图型Drawable（存放失败图片）
 
-（该例位于`com.facebook.drawee.generic.GenericDraweeHierarchy`的类注释中）
+该例位于`com.facebook.drawee.generic.GenericDraweeHierarchy`的类注释中。
 
 这个例子充分描述了一个图像的层次，当然也可以在设置的时候往里面自行设置所需要的图层。
 
