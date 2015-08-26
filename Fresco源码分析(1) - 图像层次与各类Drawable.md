@@ -31,6 +31,7 @@
 ####FadeDrawable
 
 `FadeDrawable`继承了`ArrayDrawable`。它除了具有`ArrayDrawable`本身的功能之外，还提供隐藏/显示图层的功能（可设置渐变）。具体的几个核心函数有：
+
  * `setTransitionDuration(int durationMs)` 设置隐藏/显示图层渐变动画时间（默认为300ms）。
  * `fadeInLayer(int index)` 显示指定图层
  * `fadeOutLayer(int index)` 隐藏指定图层
