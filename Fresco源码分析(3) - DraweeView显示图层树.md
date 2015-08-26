@@ -11,12 +11,12 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 ![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/setUri.PNG)
 
-我们可以从这个图中读出两个点：
+可以将这张图描述为以下信息：
 
 - DraweeView直接显示DraweeHierarchy；
-- DraweeController通过数据订阅者`DataSubscriber`来更新`DraweeHierarchy`。
+- DraweeController绑定数据源`DataSource`与数据订阅者`DataSubscriber`；
 
-之后的文章会一步步深入这个流程，将Fresco的加载、绘制过程进行详细分析。
+这张图还有部分内容没有画出：`DataSource`通过调用`notifyDataSubscriber`通知`DataScriber`更新`DraweeHierarchy`，从而更新视图。
 
 ##基类DraweeView
 
@@ -45,10 +45,13 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 它主要是用来维持`DraweeHierarchy`和`DraweeController`之间的沟通的。通过`create( DH hierarchy, Context context)`来创建实例，`DraweeHierarchy`通过第一个参数赋值，其中第二个参数用于`registerWithContext(Context)`（该函数暂时没有完善好）。
 
 它有几个主要使用的函数：
-- `void setHierarchy(DH hierarchy)` 将DraweeHierarchy传给持有的DraweeController
-- `void setController(DraweeController draweeController)` 无条件解绑旧的Controller（如果存在的话），并将旧DraweeController的DraweeHierarchy设置为null，并调用`DraweeController.onDetach()`将它变为解除绑定状态；将持有的DraweeHierarchy（如果有的话）赋给新传入的DraweeController并调用`DraweeController.onAttach()`让它变为绑定状态。（**更换DraweeController确是一个非常耗时的过程，应该尽量避免为视图指定新的DraweeController，参考[官方文档](http://fresco-cn.org/docs/using-controllerbuilder.html#draweecontroller)）**
-- `void attachController()` 若Controller未绑定，并且已经为它则调用它的
-- `void attachOrDetachController()` 当一下三者
+- `void setHierarchy(DH hierarchy)` 在`DraweeView.setHierarchy`中被调用，将DraweeHierarchy传给持有的DraweeController；
+- `void setController(DraweeController draweeController)` 在`DraweeeView.setController`中被调用无条件解绑旧的Controller（如果存在的话），并将旧DraweeController的DraweeHierarchy设置为null，并调用`DraweeController.onDetach()`将它变为解除绑定状态；将持有的DraweeHierarchy（如果有的话）赋给新传入的DraweeController并调用`DraweeController.onAttach()`让它变为绑定状态。（**更换DraweeController确是一个非常耗时的过程，应该尽量避免为视图指定新的DraweeController，参考[官方文档](http://fresco-cn.org/docs/using-controllerbuilder.html#draweecontroller)）**
+- `void attachController()` 若所属的`DraweeView`未绑定`DraweeController`，`DraweeController`成员变量不为空并且已经设置过图层树之后，调用该成员变量的`onAttach`方法；
+- `void detachController()` 若所属的`DraweeView`已绑定`DraweeController`，`DraweeController`成员变量不为空，调用该成员变量的`onDetach`方法；
+- `void attachOrDetachController()` 当已绑定`DraweeController`并且所属的`DraweeView`可见时，调用`attachController`；否则调用`detachController`。
+
+特别地，`DraweeHolder`继承了`VisibilityCallback`，为`DraweeHierarchy.RootDrawable`提供回调：当图层的Visibility属性改变的时候对`DraweeController`调用`attachOrDetachController`操作，当图层不可见时释放资源。
 
 ##GenericDraweeView
 
@@ -64,7 +67,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`使用。
 
-**在GenericDraweeView获取完xml属性之后，它会通过`GenericDraweeHierarchyBuilder.build`创造一个与之对应的GenericDraweeHierarchy作为默认使用的图层树。**
+**在GenericDraweeView获取完xml属性之后，它会通过`GenericDraweeHierarchyBuilder.build`创造一个与之对应的GenericDraweeHierarchy作为默认使用的图层树，并调用`setHierarchy`方法将其传递给`DraweeHolder`并显示出来。**
 
 ##SimpleDraweeView
 
@@ -85,6 +88,9 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
   }
 ```
 
-我们可以看到是由`setController`方法中绘制出图层树，而图层树的控制是交由DraweeController去实现的。
+而`setController`会调用`DraweeHolder.setController`，将图层树的控制权交给DraweeController，并显示出图层树。
 
-在之后的文章中我们将会逐步分析`DraweeController`是怎么加载图片的。
+##类图
+
+![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/DrawewView%20Diagram.PNG)
+
