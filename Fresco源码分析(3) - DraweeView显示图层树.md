@@ -75,8 +75,8 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 我们可以看到是由`setController`方法中绘制出图层树，而图层树的控制是交由DraweeController去实现的。
   
 我们可以用一个图初步总结SimpleDraweeView是怎么工作的：
-![DraweeView](http://img.blog.csdn.net/20150825105144873)
+![DraweeView](http://img.blog.csdn.net/20150825114159187)
 
-DraweeView直接显示DraweeHierarchy，DraweeController控制DraweeHierarchy，而DraweeeView通过所持有的DraweeHolder来维持DraweeController与DraweeView的关系。
+DraweeView直接显示DraweeHierarchy，DraweeController控制DraweeHierarchy，而DraweeeView通过所持有的DraweeHolder来维持DraweeController与DraweeView的关系，并向DraweeController传递参数和触屏事件。
 
-在下一章中，我会详细分析DraweeController是怎么样将图像加载的步骤和图层树绘制绑定到一起的。
+至此Fresco显示图像的逻辑基本分析完了，而理解DraweeController的工作方式不是一件简单的事情，它涉及到Fresco的图片请求、内存和缓存的处理等复杂的过程。在的文章中，将首先分析Fresco存取图片、发送图片请求的机制，这有助于理解DraweeController的工作方式。
