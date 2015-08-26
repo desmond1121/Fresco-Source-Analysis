@@ -16,7 +16,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - DraweeView直接显示DraweeHierarchy；
 - DraweeController绑定数据源`DataSource`与数据订阅者`DataSubscriber`；
 
-这张图还有部分内容没有画出：`DataSource`通过调用`notifyDataSubscriber`通知`DataScriber`更新`DraweeHierarchy`，从而更新视图。
+这张图还有部分内容没有画出：`DataSource`通过调用`notifyDataSubscriber`通知`DataScriber`更新`DraweeHierarchy`，从而更新视图。这部分内容和ImagePipeline部分交叉较多，将会在后续的章节中介绍，本章仅先分析DraweeView的绘制原理。
 
 ##基类DraweeView
 
@@ -92,5 +92,5 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 ##类图
 
-![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/DrawewView%20Diagram.PNG)
+![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_3.PNG)
 

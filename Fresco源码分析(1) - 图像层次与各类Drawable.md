@@ -147,12 +147,13 @@ public static Matrix getTransform(
 我们可以看到它将矩阵应用到`Canvas`中，并调用`ForwardingDrawable`的`draw(Canvas)`让它将目标视图绘制出来，之后还原Canvas的缩放属性防止累加缩放。
 
 *暂时先介绍各类容器Drawable的功能，为方便后续理解。待分析完Fresco的架构之后再为分析。*
-**SettableDrawable**：可以多次设置内容Drawable的容器，多用在目标图片的图层中。
-**AutoRotateDrawable**：提供内容动态旋转的容器。
-**OrientedDrawable**：可以将内容Drawable以一个特定的角度绘制的容器。
-**MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
-**RoundedCornersDrawable**：可以将内容的边界修剪成圆角矩形（目前版本暂不支持）或用实心的圆角矩形覆盖内容的容器。
-**GenericDraweeHierarchy.RootDrawable**：专门用于顶层图层的容器。
+
+- **SettableDrawable**：可以多次设置内容Drawable的容器，多用在目标图片的图层中。
+- **AutoRotateDrawable**：提供内容动态旋转的容器。
+- **OrientedDrawable**：可以将内容Drawable以一个特定的角度绘制的容器。
+- **MatrixDrawable**：可以为内容应用变形矩阵的容器，它只能赋予给显示目标图片的那个图层。***不能在一个图层上同时使用MatrixDrawable与ScaleTypeDrawable！***
+- **RoundedCornersDrawable**：可以将内容的边界修剪成圆角矩形（目前版本暂不支持）或用实心的圆角矩形覆盖内容的容器。
+- **GenericDraweeHierarchy.RootDrawable**：专门用于顶层图层的容器。
 
 ###视图型Drawable
 
@@ -236,7 +237,7 @@ public interface TransformCallback {
 
 由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
 
-![Class Diagram](http://img.blog.csdn.net/20150821184145929)
+![Class Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_1.PNG)
 
 ##参考文献：
 
