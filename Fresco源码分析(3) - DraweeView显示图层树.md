@@ -9,7 +9,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 首先可以用以下这个图初步理解SimpleDraweeView在调用了`setUri`之后的流程：
 
-![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/setUriSequence.PNG)
+![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/setUri.PNG)
 
 可以将这张图描述为以下信息：
 
