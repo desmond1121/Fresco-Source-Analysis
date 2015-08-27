@@ -7,7 +7,7 @@
 
 ### 初级分析：DraweeView显示图层树的过程
 
-总结调用`setUri(Uri uri)`后的调用图：
+总结`SimpleDraweeView`调用`setUri(Uri uri)`后的调用图：
 ![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/sequence_diagram_seturi.PNG)
 
 具体参考下面三个章节：
