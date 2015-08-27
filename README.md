@@ -1,12 +1,11 @@
 #Fresco-Source-Analysis
 ---
 
-> *Fresco source code analysis in Chinese, still updating.
-*中文的Fresco源码解读，持续更新中。
+中文的Fresco源码解读，持续更新中。Fresco source code analysis in Chinese, still updating.
 
-导读：
+## 导读
 
-## 初级分析：DraweeView显示图层树的过程
+### 初级分析：DraweeView显示图层树的过程
 
 总结调用`setUri(Uri uri)`后的调用图：
 ![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/setUri.PNG)
@@ -16,7 +15,7 @@
 - [Fresco源码分析(2) - GenericDraweeHierarchy构建图层](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20GenericDraweeHierarchy%E6%9E%84%E5%BB%BA%E5%9B%BE%E5%B1%82.md)
 - [Fresco源码分析(3) - DraweeView显示图层树](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20DraweeView%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%B1%82%E6%A0%91.md)
 
-## 进阶分析：Fresco的图像请求与缓存
+### 进阶分析：Fresco的图像请求与缓存
 
 - Fresco源码分析(4) - 内存池 未完成
 
