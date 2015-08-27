@@ -1,6 +1,6 @@
 #Fresco源码分析(2) - GenericDraweeHierarchy构建图层
 
-> 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj) 
+> 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121) 
 
 在本篇的内容中，作者将初步介绍Fresco是怎么构建图像层次的。
 

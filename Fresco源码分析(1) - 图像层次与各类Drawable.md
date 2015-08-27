@@ -1,7 +1,7 @@
 #Fresco源码分析(1) - 图像层次与各类Drawable
 ---
 
-> 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj)
+> 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
 
 首先介绍几种Fresco中的图像层次，了解它们会帮助你理解Fresco加载图像的原理。

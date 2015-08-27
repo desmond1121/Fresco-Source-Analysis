@@ -1,7 +1,7 @@
 #Fresco源码分析(3) - DraweeView显示图层树
 ---
 
-> 作者：[Desmond 转载请注明出处！](http://blog.csdn.net/desmondj)
+> 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
 Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarchy显示到屏幕上的家伙。那我们来分析一下相关代码，看看它的逻辑是什么样的。
 
