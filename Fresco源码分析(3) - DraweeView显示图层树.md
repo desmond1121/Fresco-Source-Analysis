@@ -15,7 +15,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 - DraweeView直接显示DraweeHierarchy；
 - DraweeController根据Uri获取数据源`DataSource`，并绑定数据订阅者`DataSubscriber`；
-- 当`DataSource`加载好数据时通知`DataSubscriber`更新DraweeHierarchy。
+- 当`DataSource`可以更新数据时通知`DataSubscriber`更新DraweeHierarchy。（实际上不是像图中所示的一个loop来循环消息，但你可以这么理解。我会在[Fresco源码分析(4) - 异步加载数据][4]中分析它的工作机制）
 
 ##2 基类DraweeView
 
@@ -225,3 +225,4 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 ![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_draweeview.PNG)
 
+[4]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md "第四篇"
