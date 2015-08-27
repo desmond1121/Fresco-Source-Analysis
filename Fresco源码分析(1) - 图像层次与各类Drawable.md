@@ -238,7 +238,7 @@ public interface TransformCallback {
 
 由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
 
-![Class Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_1.PNG)
+![Class Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_drawables.PNG)
 
 ##参考文献：
 
