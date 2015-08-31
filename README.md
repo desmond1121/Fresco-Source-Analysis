@@ -29,8 +29,8 @@
 ![DataSource](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/sequence_diagram_setUriSeq2.PNG)
 
 具体参考以下章节：
-- [Fresco源码分析(4) - 异步加载数据](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md)
-
+- [Fresco源码分析(4) - 异步加载数据](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md) 未完成
+- [Fresco源码分析(5) - 缓存](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(5)%20-%20%E7%BC%93%E5%AD%98.md) 未完成
 
 
 如有错误，希望指正，谢谢！
