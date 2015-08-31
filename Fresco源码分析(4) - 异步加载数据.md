@@ -129,23 +129,27 @@ DataSource的原型：
 - `notifyDataSubscribers()` 通知所有绑定的DataSubscriber更新数据；
 - `setResult`/`setFailure`/`setProgress` 调用对应`setXXXInternal`，当其返回true时，调用`notifyDataSubscribers()`。
 
-###3.2 各类DataSource及其功能介绍
+###3.2 AbstractProducerToDataSourceAdapter
 
-###3.2.1 AbstractProducerToDataSourceAdapter
+`AbstractProducerToDataSourceAdapter`包装了Producer取数据的过程，非常重要，所以单独列出来。
 
-`AbstractProducerToDataSourceAdapter`包装了Producer取数据的过程。
+//TODO
 
-**CloseableProducerToDataSourceAdapter**
+以下是两个继承了`AbstractProducerToDataSourceAdapter`的类：
 
-**ProducerToDataSourceAdapter**
+- `CloseableProducerToDataSourceAdapter` //TODO
+- `ProducerToDataSourceAdapter` //TODO
 
-###3.2.2 其他DataSource
+
+###3.3 其他DataSource
 
 **IncreasingQualityDataSource**
 
-它内部维持着一个`AbstractDataSource`的列表，**DataSource提供数据的清晰度由后往前递增**，所以每次获取新DataSource的时候必须是在之前获取的DataSource之前，并且会将上次使用的DataSource销毁。
+它内部维持着一个`AbstractDataSource`（可以说是`AbstractProducerToDataSourceAdapter`）列表，**DataSource提供数据的清晰度由后往前递增**，所以每次获取新DataSource的时候必须是在之前获取的DataSource之前，并且会将上次使用的DataSource销毁。
 
 **FirstAvailableDataSource**
+
+它内部维持着两个`AbstractDataSource`（可以说是`AbstractProducerToDataSourceAdapter`），它会返回两个之中首先能获取到数据的DataSource。
 
 **SettableDataSource**
 
