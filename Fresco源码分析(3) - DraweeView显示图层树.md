@@ -161,7 +161,7 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 在`AbstractDraweeControllerBuilder`（`DraweeControllerBuilder`的基类）的`build()`函数中会调用继承类实现的`obtainController()`函数，在默认使用的`PipelineDraweeControllerBuilder`中，它会做三件重要的事情：
 
-- `obtainDataSourceSupplier()` 根据Uri获取数据源`DataSource`；
+- `obtainDataSourceSupplier()` 根据Uri获取数据源`DataSource`的[Supplier][Supplier]；
 - `generateUniqueControllerId()` 获取独一无二的Controller标识（使用静态递增的`AtomicLong`变量记录唯一标识）；
 - `getCallerContext()` 获取调用者的`Context`。
 
@@ -227,4 +227,10 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 ![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_draweeview.PNG)
 
-[4]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md "第四篇"
+[3]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20DraweeView%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%B1%82%E6%A0%91.md
+
+[4]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md
+
+[Supplier]: https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F#supplier
+
+[Producer]: https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F#producerconsumer
