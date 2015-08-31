@@ -102,7 +102,9 @@ DraweeController是一个将Fresco中负责数据加载的组件组合起来并�
 
 ###3.1 ImageRequest
 
-`ImageRequest`存储着Image Pipeline处理被请求图片所需要的信息。 **它仅仅用来装信息，而且一经初始化后就无法改变内容（即Immutable，不过可以获取内容）。**它的初始化只能通过`fromUri(Uri uri)`或`ImageRequestBuilder.build()`来实现。
+`ImageRequest`存储着Image Pipeline处理被请求图片所需要的有用信息(Uri、是否渐进式图片、是否返回缩略图、缩放、是否自动旋转等)。
+
+**ImagePipeline仅仅用来装信息，而且一经初始化后就只能获取内容，无法改变内容（即Immutable）。** 初始化ImageRequest只能通过`ImageRequest.fromUri(Uri uri)`或`ImageRequestBuilder.build()`来实现。
 
 我们来看看它内部存储着一些什么信息：
 
@@ -118,7 +120,7 @@ DraweeController是一个将Fresco中负责数据加载的组件组合起来并�
 - `IsDiskCacheEnabled` 若为false，则此图片请求不会从文件缓存中获取数据；
 - `PostProcessor` 在图片请求成功之后对图片的处理操作，参考[修改图片](http://fresco-cn.org/docs/modifying-image.html#_)。
 
-DraweeController是使用ImageRequest来初始化数据订阅者的，如果需要修改以上信息，必须手动创建ImageRequest，并在`PipelineDraweeControllerBuilder.build()`之前使用`.setImageRequest`设置它。
+DraweeController是使用ImageRequest来初始化数据订阅者的。`SimpleDraweeView`调用`setUri(Uri)`会产生一个默认的`ImageRequest`含有指定Uri信息，如果需要修改`ImageRequest`其他信息，必须手动创建`ImageRequest`，并在`PipelineDraweeControllerBuilder`调用`.build()`之前使用`.setImageRequest`设置它。
 
 ###3.2 可关闭的引用
 
