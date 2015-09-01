@@ -73,7 +73,7 @@
         }
     }
 
-我们发现它会**首先根据传入的`ImageRequest`产生一个`Producer`，它提供了数据传送的管道**。
+我们发现它会**首先根据传入的`ImageRequest`产生一个`Producer`，它为不同ImageRequest提供了不同的数据传送的管道**。
 
 在`submitFetchRequest`函数中做了三件事：
 
