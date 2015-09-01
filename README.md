@@ -9,14 +9,7 @@
 
 ### 初级分析：DraweeView显示图层树的过程
 
-这部分的内容针对使用者会接触到的几个部件：DraweeHierarchy、DraweeController、DraweeView、ImageRequest等，介绍这些组件的功能，分析它们之间的关系。
-
-总结`SimpleDraweeView`调用`setUri(Uri uri)`后的调用图：
-![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/sequence_diagram_setUriSeq1.PNG)
-
-（`DataSource`在进阶分析中：[Fresco源码分析(4) - 异步加载数据][4]
-
-具体参考以下章节：
+这部分的内容针对使用者会接触到的几个部件：DraweeHierarchy、DraweeController、DraweeView、ImageRequest等，介绍这些组件的功能，分析它们之间的关系。具体参考以下章节：
 
 - [Fresco源码分析(1) - 图像层次与各类Drawable][1]
 - [Fresco源码分析(2) - GenericDraweeHierarchy构建图层][2]
@@ -24,12 +17,7 @@
 
 ### 进阶分析：Fresco的图像请求与缓存
 
-这部分的内容从DataSource的功能出发，探索与分析Fresco底层缓存、加载数据的原理实现。
-
-根据Uri生成`Producer`和`DataSource`的过程概览：
-![DataSource](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/sequence_diagram_setUriSeq2.PNG)
-
-具体参考以下章节：
+这部分的内容从DataSource的功能出发，探索与分析Fresco底层缓存、加载数据的原理实现。具体参考以下章节：
 
 - [Fresco源码分析(4) - 异步加载数据][4]
 - [Fresco源码分析(5) - 文件缓存][5] 未完成
