@@ -1,4 +1,4 @@
-#Fresco源码分析(6) - 内存缓存
+#Fresco源码分析(6) - 缓存
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)

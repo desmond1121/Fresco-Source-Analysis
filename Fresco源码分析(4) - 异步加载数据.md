@@ -151,19 +151,19 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 
 ###3.3 其他DataSource
 
-**IncreasingQualityDataSource**
+####IncreasingQualityDataSource
 
 它内部维持着一个`AbstractDataSource`（可以说是`CloseableProducerToDataSourceAdapter`）列表，**DataSource提供数据的清晰度由后往前递增**。
 
 它会为列表中的每一个DataSource绑定一个DataSubscriber（`IncreasingQualityDataSourceSupplier.InternalDataSubscriber`)，它负责保证每次只能获取清晰度更高的DataSource数据，获取数据同时会销毁数据清晰度更低的DataSource。
 
-**FirstAvailableDataSource**
+####FirstAvailableDataSource
 
 它内部维持着一个`AbstractDataSource`（可以说是`CloseableProducerToDataSourceAdapter`）列表，它会返回这里面首先能获取到数据的DataSource。
 
 同样，它也会为列表中的DataSource绑定DataSubscriber（`FirstAvailableDataSourceSupplier.InternalDataSubscriber`），如果数据加载成功，那么就设定指定DataSource为目标DataSource；如果加载数据失败，则跳转到列表下一个DataSource继续尝试加载。
 
-**SettableDataSource**
+####SettableDataSource
 
 它继承AbstractDataSource，并将重写`settResult`、`setFailure`、`setProgress`在内部调用父类的相应函数，**但是修饰符变成了public**（原来是protected）。即使用`SettableDataSource`时可以在外部调用这三个函数设置DataSource状态。一般用于在获取DataSource失败时直接产生一个设置为Failure的DataSource。
 

@@ -15,7 +15,7 @@
 - [Fresco源码分析(2) - GenericDraweeHierarchy构建图层][2]
 - [Fresco源码分析(3) - DraweeView显示图层树][3]
 
-### 进阶分析：Fresco的图像请求与缓存
+### 进阶分析：图像请求与缓存
 
 这部分的内容从DataSource的功能出发，探索与分析Fresco底层缓存、加载数据的原理实现。具体参考以下章节：
 
