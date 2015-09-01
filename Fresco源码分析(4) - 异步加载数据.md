@@ -3,7 +3,7 @@
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
-在这一章中，我将分析Fresco是怎么根据Uri生成`DataSource`与`Producer`的（关于Producer见[Wiki](https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F#producerconsumer)）。
+在这一章中，我将分析数据源`DataSource`的生成过程及它的作用。
 
 ##1 时序图
 
@@ -52,7 +52,7 @@
 
 这个函数给我们传递了两个信息：
 
-- **Fresco中数据的传递都是包装在CloseableReference<CloseableImage>中的**！
+- **Fresco中数据的传递基本都是包装在CloseableReference<CloseableImage>中的**！
 - 它会根据`bitmapCacheOnly`（是否只从已解码的内存缓存中获取数据）来获取不同的DataSource。
 
 那我们就来看看它不限制缓存级别的时候是怎么处理的（这种情况下会包括`bitmapCacheOnly`时候的内容）。
@@ -73,7 +73,7 @@
         }
     }
 
-我们发现它会首先根据传入的`ImageRequest`产生一个`Producer`，**它提供了数据传送的管道**。
+我们发现它会**首先根据传入的`ImageRequest`产生一个`Producer`，它提供了数据传送的管道**。
 
 在`submitFetchRequest`函数中做了三件事：
 
