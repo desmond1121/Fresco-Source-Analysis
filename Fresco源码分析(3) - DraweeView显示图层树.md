@@ -141,8 +141,8 @@ Facebook在Java中实现了具有引用计数功能的类：`SharedReference<T>`
 
 Fresco中定义了`CloseableImage`，它会在`finalize`的时候调用`close()`，有这两个类继承了它：
 
-- CloseableStaticBitmap 它内部持有一个`CloseableReference<Bitmap>`包装目标`Bitamp`，以及关于图像质量、旋转角度的信息。在`close()`调用的时候会调用`CloseableReference`的`close()`函数释放资源；
-- CloseableAnimatedBitmap 它内部持有一个`List<CloseableReference<Bitmap>>`包装起每一帧的`Bitmap`，还存有每一帧的时长。在`close()`调用的时候会递归释放列表资源。
+- `CloseableStaticBitmap` 它内部持有一个`CloseableReference<Bitmap>`包装目标`Bitamp`，以及关于图像质量、旋转角度的信息。在`close()`调用的时候会调用`CloseableReference`的`close()`函数释放资源；
+- `CloseableAnimatedBitmap` 它内部持有一个`List<CloseableReference<Bitmap>>`包装起每一帧的`Bitmap`，还存有每一帧的时长。在`close()`调用的时候会递归释放列表资源。
 
 ###3.3 数据订阅
 
