@@ -249,28 +249,104 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 我们看到当InputStream中还有数据时就会想outputStream中写，计算并更新进度。在`maybeHandleIntermediateResult`会判断当两次获取数据间隔超过100ms即会通知Consumer更新一次数据。最后如果InputStream读取完了会再通知Consumer读取一次数据。
 
-###缓存Producer
+###2.3.3 缓存Producer
 
-这类Producer负责从缓存中寻找数据，在初始化都会传入一个nextProducer，当没有获取到缓存时调用下一个Producer的`productResult`方法。主要有这几种：
+这类Producer负责从缓存中寻找数据，在初始化都会传入一个nextProducer，当没有获取到缓存时调用下一个Producer的`productResult(Consumer consumer, ProducerContext context)`方法。主要有这几种：
 
-- `BitmapMemoryCacheProducer` 在异界吗的内存缓存中获取数据；若未找到，则在nextProducer中获取数据；
+- `BitmapMemoryCacheGetProducer` 它是一个Immutable的Producer，仅用于包装后续Producer；
+- `BitmapMemoryCacheProducer` 在已解码的内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存；
+- `BitmapMemoryCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`BitmapMemoryCacheProducer`，将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
 - `PostprocessedBitmapMemoryCacheProducer` 在已解码的内存缓存中获取PostProcessor处理过的图片。它的nextProducer都是`PostProcessorProducer`，因为如果没有获取到被PostProcess的缓存，就需要对获取的图片进行PostProcess。；若未找到，则在nextProducer中获取数据；
-- `EncodedMemoryCacheProducer` 在未解码的内存缓存中寻找数据，如果找到则返回，使用结束后释放资源；若未找到，则在nextProducer中获取数据；
-- `EncodedCacheKeyMultiplexProducer` ?
+- `EncodedMemoryCacheProducer` 在未解码的内存缓存中寻找数据，如果找到则返回，使用结束后释放资源；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存；
+- `EncodedCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`EncodedMemoryCacheProducer`，将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
+- `DiskCacheProducer` 在文件内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存
 
-以上Producer都会自定义一个Consumer将传入的Consumer包装起来，使得在获取到数据的同时将其缓存到对应的缓存中。
-
-###功能Producer
+###2.3.4 功能Producer
 
 这类Producer的初始化都也会传入一个nextProducer，它，它们的作用只是对下一个Producer产生的结果进行处理，主要有这几种：
 
+- `MultiplexProducer` 将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，让他们从都从nextProducer中获取数据；
 - `ThreadHandoffProducer` 将nextProducer的`produceResult`方法放在后台线程中执行（**线程池容量为1**）；
 - `SwallowResultProducer` 将nextProducer的获取的数据“吞”掉，回在Consumer的onNewResult中传入null值；
 - `ResizeAndRotateProducer` 将nextProducer产生的EncodedImage根据EXIF的旋转、缩放属性进行变换（**如果对象不是JPEG格式图像，则不会发生变换**）；
 - `PostProcessorProducer` 将nextProducer产生的EncodedImage根据PostProcessor进行修改，关于PostProcessor详见[修改图片](http://fresco-cn.org/docs/modifying-image.html#_)；
-- `DecodeProducer` 将nextProducer产生的EncodedImage解码。**解码在后台线程中执行，可以在ImagePipelineConfig中通过`setExecutorSupplier`来设置线程池数量，默认最大可用的线程数；
+- `DecodeProducer` 将nextProducer产生的EncodedImage解码。**解码在后台线程中执行，可以在ImagePipelineConfig中通过`setExecutorSupplier`来设置线程池数量，默认为最大可用的处理器数**；
 
+以上所有的Producer（包括元Producer都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索）。
 
+###2.3.5 包装Consumer
+
+**Producer使用数据获取时向下传递，Consumer得到结果时是向上传递。**所以几乎每个Producer都会将上一个Producer传下来的Consumer进行包装，由此来达到自己的目的。我们简单看个例子，如果BitmapMemoryCacheProducer在已解码的内存缓存中没有找到数据，它就会调用nextProducer的`productResult(Consumer consumer, ProducerContext context)`办法。但是它会对传入的Consumer进行一定包装，我们看看相应代码：
+
+    protected Consumer<CloseableReference<CloseableImage>> wrapConsumer(
+            final Consumer<CloseableReference<CloseableImage>> consumer,
+            final CacheKey cacheKey) {
+        return new DelegatingConsumer<
+                CloseableReference<CloseableImage>,
+                CloseableReference<CloseableImage>>(consumer) {
+            @Override
+            public void onNewResultImpl(CloseableReference<CloseableImage> newResult, boolean isLast) {
+                if (newResult == null) {
+                    if (isLast) {
+                        getConsumer().onNewResult(null, true);
+                    }
+                    return;
+                }
+
+                if (newResult.get().isStateful()) {
+                    getConsumer().onNewResult(newResult, isLast);
+                    return;
+                }
+
+                if (!isLast) {
+                    CloseableReference<CloseableImage> currentCachedResult = mMemoryCache.get(cacheKey);
+                    if (currentCachedResult != null) {
+                        try {
+                            QualityInfo newInfo = newResult.get().getQualityInfo();
+                            QualityInfo cachedInfo = currentCachedResult.get().getQualityInfo();
+                            if (cachedInfo.isOfFullQuality() || cachedInfo.getQuality() >= newInfo.getQuality()) {
+                                getConsumer().onNewResult(currentCachedResult, false);
+                                return;
+                            }
+                        } finally {
+                            CloseableReference.closeSafely(currentCachedResult);
+                        }
+                    }
+                }
+
+                CloseableReference<CloseableImage> newCachedResult =
+                        mMemoryCache.cache(cacheKey, newResult);
+                try {
+                    if (isLast) {
+                        getConsumer().onProgressUpdate(1f);
+                    }
+                    getConsumer().onNewResult(
+                            (newCachedResult != null) ? newCachedResult : newResult, isLast);
+                } finally {
+                    CloseableReference.closeSafely(newCachedResult);
+                }
+            }
+        };
+    }
+
+我们看到有它将Consumer包装起来之后，在下层Consumer传递上来数据时按以下顺序处理：
+
+1. 数据为空，直接传给上层Consumer处理并返回；
+2. 数据存储着某种状态（如动态图存储着当前浏览帧）时，不进行缓存，直接传给上层Consumer处理并返回；
+3. 当没有结束传递时，如果收到数据的质量大于缓存中对应数据的质量（如果存在的话）时，则传给上层Consumer处理并返回；
+4. 数据传递结束，将得到的数据缓存起来，更新进度，通知上层Consumer处理。
+
+##3 Producer链
+
+`ProducerSequenceFactory`是专门将各类Producer链接起来的，根据其中的逻辑，我将可能涉及层次最深的Uri——网络Uri的Producer链在此列出，它会到每个缓存中查找数据，最后如果都没有命中，则会去网络上下载。
+
+BitmapMemoryCacheGetProducer->ThreadHandoffProducer->BitmapMemoryCacheKeyMultiplexProducer->**BitmapMemoryCacheProducer**->DecodeProducer->ResizeAndRotateProducer（可选）->EncodedCacheKeyMultiplexProducer->**EncodedMemoryCacheProducer**->**DiskCacheProducer**->NetworkFetchProducer
+
+加粗的Producer是在缓存中获取数据的Producer，我们看到所有的获取数据操作都通过ThreadHandoffProducer包装到了后台进程中执行。每一级缓存如果命中，则会直接返回结果而不会再传递到下一个Producer中。
+
+##4 结语
+
+Producer是理解Fresco处理缓存的一个很好入手点，本章中仅仅是分析其脉络及一些基础原理，如果有兴趣的读者可以自行再去探究。
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20GenericDraweeHierarchy%E6%9E%84%E5%BB%BA%E5%9B%BE%E5%B1%82.md
