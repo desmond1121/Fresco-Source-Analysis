@@ -30,11 +30,11 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 ##2 元Producer
 
-**Fresco将Producer组织成类似链表结构来进行多层内容顺序访问。** 我做了一个流程图，供读者参考。略有精简，不过已经能够代表大概意思：
+**Fresco将Producer组织成流水线来进行多层内容顺序访问。** 我做了一个流程图，供读者参考。略有精简，不过已经能够代表大概意思：
 
 ![ProducerSequence](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/ProducerSeq.PNG)
 
-图中每一个方框都代表一个Producer，**绿色框内的Producer会在后台线程中进行取数据操作。**在产生一个Uri的时候，最先在Bitmap内存缓存Producer中查找，若命中则返回，否则将会调用之后Producer的`produceResult`函数。由于解码所需要耗费的事件比较多，所以它是在非UI线程中执行的。大部分Producer都是中间Producer，有几个Producer是在之前所有的Producer都没有获取到缓存数据后要去文件系统或网络上获取数据的，我将他们称做**元Producer**。一共有两大类，他们是LocalProducer（负责本地数据存取）及NetworkProducer（负责网络数据存取）。
+图中每一个方框都代表一个Producer，**蓝色框内的Producer会在缓存中取数据。**在产生一个Uri的时候，最先在Bitmap内存缓存Producer中查找，若命中则返回，否则将会调用之后Producer的`produceResult`函数。由于解码所需要耗费的事件比较多，所以它是在非UI线程中执行的。大部分Producer都是中间Producer，有几个Producer是在之前所有的Producer都没有获取到缓存数据后要去文件系统或网络上获取数据的，我将他们称做**元Producer**。一共有两大类，他们是LocalProducer（负责本地数据存取）及NetworkProducer（负责网络数据存取）。
 
 ###2.1 本地文件获取
 
@@ -337,9 +337,9 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 3. 当没有结束传递时，如果收到数据的质量大于缓存中对应数据的质量（如果存在的话）时，则传给上层Consumer处理并返回；
 4. 数据传递结束，将得到的数据缓存起来，更新进度，通知上层Consumer处理。
 
-##3 Producer链
+##3 Producer流水线
 
-`ProducerSequenceFactory`是专门将各类Producer链接起来的，根据其中的逻辑，我将可能涉及层次最深的Uri——网络Uri的Producer链在此列出，它会到每个缓存中查找数据，最后如果都没有命中，则会去网络上下载。
+`ProducerSequenceFactory`是专门将生成各类链接起来的Producer，根据其中的逻辑，我将可能涉及层次最深的Uri——网络Uri的Producer链在此列出，它会到每个缓存中查找数据，最后如果都没有命中，则会去网络上下载。
 
 |顺序|Producer|是否必须|功能|
 |:--:|:--:|:--:|:--|
