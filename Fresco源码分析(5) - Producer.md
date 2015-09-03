@@ -255,10 +255,10 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 - `BitmapMemoryCacheGetProducer` 它是一个Immutable的Producer，仅用于包装后续Producer；
 - `BitmapMemoryCacheProducer` 在已解码的内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存；
-- `BitmapMemoryCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`BitmapMemoryCacheProducer`，将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
+- `BitmapMemoryCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`BitmapMemoryCacheProducer`，将多个拥有相同已解码内存缓存键（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
 - `PostprocessedBitmapMemoryCacheProducer` 在已解码的内存缓存中获取PostProcessor处理过的图片。它的nextProducer都是`PostProcessorProducer`，因为如果没有获取到被PostProcess的缓存，就需要对获取的图片进行PostProcess。；若未找到，则在nextProducer中获取数据；
 - `EncodedMemoryCacheProducer` 在未解码的内存缓存中寻找数据，如果找到则返回，使用结束后释放资源；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存；
-- `EncodedCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`EncodedMemoryCacheProducer`，将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
+- `EncodedCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`EncodedMemoryCacheProducer`，将多个拥有相同未解码内存缓存键（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
 - `DiskCacheProducer` 在文件内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存
 
 ###2.3.4 功能Producer
@@ -271,6 +271,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 - `ResizeAndRotateProducer` 将nextProducer产生的EncodedImage根据EXIF的旋转、缩放属性进行变换（**如果对象不是JPEG格式图像，则不会发生变换**）；
 - `PostProcessorProducer` 将nextProducer产生的EncodedImage根据PostProcessor进行修改，关于PostProcessor详见[修改图片](http://fresco-cn.org/docs/modifying-image.html#_)；
 - `DecodeProducer` 将nextProducer产生的EncodedImage解码。**解码在后台线程中执行，可以在ImagePipelineConfig中通过`setExecutorSupplier`来设置线程池数量，默认为最大可用的处理器数**；
+- `WebpTranscodeProducer` 若nextProducer产生的EncodedImage为WebP格式，则将其解码成`DecodeProducer`能够处理的EncodedImage。解码在后代进程中进行。
 
 以上所有的Producer（包括元Producer都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索）。
 
@@ -340,9 +341,21 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 `ProducerSequenceFactory`是专门将各类Producer链接起来的，根据其中的逻辑，我将可能涉及层次最深的Uri——网络Uri的Producer链在此列出，它会到每个缓存中查找数据，最后如果都没有命中，则会去网络上下载。
 
-BitmapMemoryCacheGetProducer->ThreadHandoffProducer->BitmapMemoryCacheKeyMultiplexProducer->**BitmapMemoryCacheProducer**->DecodeProducer->ResizeAndRotateProducer（可选）->EncodedCacheKeyMultiplexProducer->**EncodedMemoryCacheProducer**->**DiskCacheProducer**->NetworkFetchProducer
+|顺序|Producer|是否必须|功能|
+|:--:|:--:|:--:|:--|
+|1|BitmapMemoryCacheGetProducer|是|使Producer序列只读|
+|2|ThreadHandoffProducer|是|使下层Producer工作在后台进程中执行|
+|3|BitmapMemoryCacheKeyMultiplexProducer|是|使多个相同已解码内存缓存键的ImageRequest都从相同Producer中获取数据|
+|4|**BitmapMemoryCacheProducer**|是|从已解码的内存缓存中获取数据|
+|5|DecodeProducer|是|将下层Producer产生的数据解码|
+|6|ResizeAndRotateProducer|否|将下层Producer产生的数据变换|
+|7|EncodedCacheKeyMultiplexProducer|是|使多个相同未解码内存缓存键的ImageRequest都从相同Producer中获取数据|
+|8|**EncodedMemoryCacheProducer**|是|从未解码的内存缓存中获取数据|
+|9|**DiskCacheProducer**|是|从文件缓存中获取数据|
+|11|WebpTranscodeProducer|否|将下层Producer产生的Webp（如果是的话）进行解码|
+|10|NetworkFetchProducer|是|从网络上获取数据|
 
-加粗的Producer是在缓存中获取数据的Producer，我们看到所有的获取数据操作都通过ThreadHandoffProducer包装到了后台进程中执行。每一级缓存如果命中，则会直接返回结果而不会再传递到下一个Producer中。
+我们看到所有的获取数据操作都通过ThreadHandoffProducer包装到了后台进程中执行。加粗的Producer是在缓存中获取数据的Producer，每一级缓存如果命中，则会直接返回结果而不会再传递到下一个Producer中。
 
 ##4 结语
 
