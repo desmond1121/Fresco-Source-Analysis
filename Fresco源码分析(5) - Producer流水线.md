@@ -32,7 +32,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 **Fresco将Producer组织成流水线来进行多层内容顺序访问。** 我做了一个流程图，供读者参考。略有精简，不过已经能够代表大概意思：
 
-![ProducerSequence](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/ProducerSeq.PNG)
+![ProducerSequence](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/producer_cache_sequence.PNG)
 
 图中每一个方框都代表一个Producer，**蓝色框内的Producer会在缓存中取数据。**在产生一个Uri的时候，最先在Bitmap内存缓存Producer中查找，若命中则返回，否则将会调用之后Producer的`produceResult`函数。由于解码所需要耗费的事件比较多，所以它是在非UI线程中执行的。大部分Producer都是中间Producer，有几个Producer是在之前所有的Producer都没有获取到缓存数据后要去文件系统或网络上获取数据的，我将他们称做**元Producer**。一共有两大类，他们是LocalProducer（负责本地数据存取）及NetworkProducer（负责网络数据存取）。
 
