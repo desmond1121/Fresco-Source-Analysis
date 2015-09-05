@@ -5,7 +5,7 @@
 
 ### Fresco中几个基本设计模式
 
-为了不在后面文档中赘述和加强读者理解，在[Wiki-设计模式](https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F)中介绍了Fresco中用到的几个基本设计模式。
+在[Wiki-设计模式](https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F)中介绍了Fresco中用到的几个基本设计模式，供读者参考。
 
 ### 初级分析：DraweeView显示图层树的过程
 
