@@ -249,7 +249,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 我们看到当InputStream中还有数据时就会想outputStream中写，计算并更新进度。在`maybeHandleIntermediateResult`会判断当两次获取数据间隔超过100ms即会通知Consumer更新一次数据。最后如果InputStream读取完了会再通知Consumer读取一次数据。
 
-###2.3.3 缓存Producer
+###2.3 缓存Producer
 
 这类Producer负责从缓存中寻找数据，在初始化都会传入一个nextProducer，当没有获取到缓存时调用下一个Producer的`productResult(Consumer consumer, ProducerContext context)`方法。主要有这几种：
 
@@ -261,7 +261,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 - `EncodedCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`EncodedMemoryCacheProducer`，将多个拥有相同未解码内存缓存键（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
 - `DiskCacheProducer` 在文件内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存
 
-###2.3.4 功能Producer
+###2.4 功能Producer
 
 这类Producer的初始化都也会传入一个nextProducer，它，它们的作用只是对下一个Producer产生的结果进行处理，主要有这几种：
 
@@ -275,7 +275,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 以上所有的Producer（包括元Producer都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索）。
 
-###2.3.5 包装Consumer
+###2.5 包装Consumer
 
 **Producer使用数据获取时向下传递，Consumer得到结果时是向上传递。**所以几乎每个Producer都会将上一个Producer传下来的Consumer进行包装，由此来达到自己的目的。我们简单看个例子，如果BitmapMemoryCacheProducer在已解码的内存缓存中没有找到数据，它就会调用nextProducer的`productResult(Consumer consumer, ProducerContext context)`办法。但是它会对传入的Consumer进行一定包装，我们看看相应代码：
 
