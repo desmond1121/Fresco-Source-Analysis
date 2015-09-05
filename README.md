@@ -27,15 +27,13 @@
 
 作者总结了Fresco的架构图如下：
 
-![Fresco](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/Fresco.PNG)
+![Fresco](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/FrescoNew.PNG)
 
 其中：
 
-- **表现层** 用于绘制图片；
-- **DraweeController** 是表现层与控制层的纽带；
-- **控制层** 管理缓存查找、图片获取及处理的逻辑，是表现层与核心层之间的纽带；
-- **Producer** 是控制层与核心层之间的纽带，它负责在核心层中查找数据的逻辑，并最终转达给控制层；
-- **核心层** 负责各类缓存、解码、数据获取的逻辑。
+- **表现层** 维持图片层次DraweeHierarchy并将其绘制到屏幕上；
+- **控制层** 提供缓存查找、图片获取及处理接口，通过DraweeController来控制表现层的DraweeHierarchy，它是表现层与核心层之间的纽带；
+- **核心层** 负责各类缓存、解码、数据获取的逻辑，将数据通过Producer传达给控制层的Consumer。
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
