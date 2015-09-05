@@ -21,7 +21,7 @@
 
 - [Fresco源码分析(4) - 异步加载数据][4]
 - [Fresco源码分析(5) - Producer流水线][5]
-- [Fresco源码分析(6) - 缓存][6] 未完成
+- [Fresco源码分析(6) - 缓存与解码][6] 未完成
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20GenericDraweeHierarchy%E6%9E%84%E5%BB%BA%E5%9B%BE%E5%B1%82.md

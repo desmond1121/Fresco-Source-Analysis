@@ -1,20 +1,24 @@
-#Fresco源码分析(6) - 缓存
+#Fresco源码分析(6) - 缓存与解码
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
-##几个关键概念
+##1. 解码
 
 
 
-###CacheKey
+##2. 缓存
+
+###2.1 CacheKey
 
 Fresco中专门用于缓存键的接口，有这两种类实现了`CacheKey`：
 
-- `BitmapMemoryCacheKey` 用于已解码的内存缓存键，会对Uri字符串、缩放尺寸、解码
-- `SimpleCacheKey` 普通的缓存键实现，使用传入的HashCode作为唯一标识，所以需要保证相同键传入字符串相同。
+- `BitmapMemoryCacheKey` 用于已解码的内存缓存键，会对Uri字符串、缩放尺寸、解码参数、PostProcessor等关键参数进行hashCode作为唯一标识；
+- `SimpleCacheKey` 普通的缓存键实现，使用传入字符串的hashCode作为唯一标识，所以需要保证相同键传入字符串相同。
 
-##文件缓存
+###2.2 已解码的内存缓存(BitmapMemoryCache)
+
+
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
