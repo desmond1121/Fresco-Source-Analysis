@@ -52,7 +52,7 @@
 
 这个函数给我们传递了两个信息：
 
-- **Fresco中数据的传递基本都是包装在CloseableReference<CloseableImage>中的**！
+- **Fresco中数据的传递基本都是包装在[CloseableReference][Closeable]中的**！
 - 它会根据`bitmapCacheOnly`（是否只从已解码的内存缓存中获取数据）来获取不同的DataSource。
 
 那我们就来看看它不限制缓存级别的时候是怎么处理的（这种情况下会包括`bitmapCacheOnly`时候的内容）。
@@ -178,7 +178,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 [6]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(6)%20-%20%E7%BC%93%E5%AD%98%E4%B8%8E%E8%A7%A3%E7%A0%81.md
 
 [Supplier]: https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F#supplier
-
+[Closeable]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(3)%20-%20DraweeView%E6%98%BE%E7%A4%BA%E5%9B%BE%E5%B1%82%E6%A0%91.md#32-可关闭的引用
 [Producer]: https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F#producerconsumer
 
 
