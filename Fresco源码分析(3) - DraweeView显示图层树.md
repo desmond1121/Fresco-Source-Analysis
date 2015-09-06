@@ -135,13 +135,13 @@ Facebook在Java中实现了具有引用计数功能的类：`SharedReference<T>`
 - `CloseableReference<T> of(T object, ResourceReleaser<T> releaser)` **用于初始化引用计数（而不是使用构造函数）**，该函数会新建一个`SharedReference`将对象包装起来，引用计数为1。若不传releaser，会使用默认的`ResourceReleaser`，调用`Closeable.close()`函数回收`Closeable`引用；
 - `CloseableReference<T> clone()` 用于添加对象引用，该函数会新建一个`CloseableReference`，同时持有的`SharedReference`引用+1， **不会创建`SharedReference`对象**；
 - `T get()` 返回引用对象；
-- `void close()` 减少一个引用计数，若引用计数减为0，则调用releaser的`release(T object)`将对象释放。 **一旦创建了一个CloseableReference，当持有者离开作用域时就必须调用这个函数！**
+- `void close()` 减少一个引用计数，若引用计数减为0，则调用releaser的`release(T object)`将对象释放。**一旦创建了一个CloseableReference，当持有者离开作用域时就必须调用这个函数！（finally函数块是释放资源工作最好的地方）**
 
 最好不要直接使用这个工具，如果非用不可的话，你需要谨慎地操作它。使用方法参考[Fresco中文文档](http://fresco-cn.org/docs/closeable-references.html#_)。
 
 Fresco中定义了`CloseableImage`，它会在`finalize`的时候调用`close()`，有这两个类继承了它：
 
-- `CloseableStaticBitmap` 它内部持有一个`CloseableReference<Bitmap>`包装目标`Bitamp`，以及关于图像质量、旋转角度的信息。在`close()`调用的时候会调用`CloseableReference`的`close()`函数释放资源；
+- `CloseableStaticBitmap` 它内部持有一个`CloseableReference<Bitmap>`包装目标`Bitamp`，以及关于图像质量、旋转角度的信息。在`close()`调用的时候会调用`CloseableReference`的`close()`函数释放资源，**释放的原理是Bitmap.recycle()**；
 - `CloseableAnimatedBitmap` 它内部持有一个`List<CloseableReference<Bitmap>>`包装起每一帧的`Bitmap`，还存有每一帧的时长。在`close()`调用的时候会递归释放列表资源。
 
 ###3.3 数据订阅
