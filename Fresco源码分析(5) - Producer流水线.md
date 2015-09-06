@@ -128,9 +128,9 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBufferBackedEncodedImage`供继承类使用，我们来看看几个继承`LocalProducer`的类是怎么重写`getEncodedImage`的吧：
 
 - `LocalAssetFetchProducer` 通过AssetManager获取ImageRequest对象的输入流及对象字节码长度，将它转换为`EncodedImage`；
-- `LocalContentUriFetchProducer` 若Uri指向联系人，则获取联系人头像；若指向相册图片，则会根据是否传入ResizeOption进行**一定缩放**（这里不是完全按ResizeOption缩放）；若止这两个条件都不满足，则直接调用`getByteBufferBackedEncodedImage`将ContentResolver的`openInputStream(Uri uri)`转化为`EncodedImage`；
-- `LocalFileFetchProducer` 直接通过指定文件打开InputStream，从而转化为`EncodedImage`；
-- `LocalResourceFetchProducer` 通过Resources的`openRawResources`打开InputStream，从而转化为`EncodedImage`。
+- `LocalContentUriFetchProducer` 若Uri指向联系人，则获取联系人头像；若指向相册图片，则会根据是否传入ResizeOption进行**一定缩放**（这里不是完全按ResizeOption缩放）；若止这两个条件都不满足，则直接调用`ContentResolver`的函数`openInputStream(Uri uri)`获取输入流并转化为`EncodedImage`；
+- `LocalFileFetchProducer` 直接通过指定文件获取输入流，从而转化为`EncodedImage`；
+- `LocalResourceFetchProducer` 通过`Resources`的函数`openRawResources`获取输入流，从而转化为`EncodedImage`。
 
 下面两个类不继承`LocalProducer`，他们获取数据也是在后台线程中执行，但是有比较特殊的功能，在此一起介绍：
 
@@ -143,7 +143,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 `NetworkFetcher`是Fresco用以获取数据，计算下载进度，提供下载回调函数的工具。它使用`fetch(FetchState fetchState, Callback callback)`来进行网络请求，其中两个参数的意义分别为：
 
-- `FetchState` 提供了Consumer及ProducerContext，用于获取数据请求参数及数据回调对象；
+- `FetchState` 提供了Consumer及ProducerContext，用于数据回调对象及获取数据请求参数；
 - `Callback` 这个借口定义在了`NetworkFetcher`中，提供了下载成功、失败、取消的回调函数接口。
 
 由于Fresco中默认使用HttpUrlConnection进行网络请求，我们直接分析HttpUrlConnectionNetworkFetcher，首先看它的`fetch`函数：
@@ -265,7 +265,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 ###2.4 功能Producer
 
-这类Producer的初始化都也会传入一个nextProducer，它，它们的作用只是对下一个Producer产生的结果进行处理，主要有这几种：
+这类Producer的初始化也都会传入一个nextProducer，它们的作用只是对nextProducer产生的结果进行处理，主要有这几种：
 
 - `MultiplexProducer` 将多个拥有相同CacheKey（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，让他们从都从nextProducer中获取数据；
 - `ThreadHandoffProducer` 将nextProducer的`produceResult`方法放在后台线程中执行（**线程池容量为1**）；
@@ -279,7 +279,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 ###2.5 包装Consumer
 
-**Producer使用数据获取时向下传递，Consumer得到结果时是向上传递。**所以几乎每个Producer都会将上一个Producer传下来的Consumer进行包装，由此来达到自己的目的。我们简单看个例子，如果BitmapMemoryCacheProducer在已解码的内存缓存中没有找到数据，它就会调用nextProducer的`productResult(Consumer consumer, ProducerContext context)`办法。但是它会对传入的Consumer进行一定包装，我们看看相应代码：
+**Producer使用数据获取时向下传递，Consumer得到结果时是向上传递。**所以几乎每个Producer都会将上层Producer传下来的Consumer进行包装，在他们的NewResult中增加一些功能，由此来达到自己的目的。我们简单看个例子，如果BitmapMemoryCacheProducer在已解码的内存缓存中没有找到数据，它就会调用nextProducer的`productResult(Consumer consumer, ProducerContext context)`办法。但是它会对传入的Consumer进行一定包装，我们看看相应代码：
 
     protected Consumer<CloseableReference<CloseableImage>> wrapConsumer(
             final Consumer<CloseableReference<CloseableImage>> consumer,
