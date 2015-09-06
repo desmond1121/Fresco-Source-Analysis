@@ -155,7 +155,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 
 它内部维持着一个`AbstractDataSource`（可以说是`CloseableProducerToDataSourceAdapter`）列表，**DataSource提供数据的清晰度由后往前递增**。
 
-它会为列表中的每一个DataSource绑定一个DataSubscriber（`IncreasingQualityDataSourceSupplier.InternalDataSubscriber`)，它负责保证每次只能获取清晰度更高的DataSource数据，获取数据同时会销毁数据清晰度更低的DataSource。
+它会为列表中的每一个DataSource绑定一个DataSubscriber（`IncreasingQualityDataSourceSupplier.InternalDataSubscriber`），它负责保证每次只能获取清晰度更高的DataSource数据，获取数据同时会销毁数据清晰度更低的DataSource。
 
 ####FirstAvailableDataSource
 
