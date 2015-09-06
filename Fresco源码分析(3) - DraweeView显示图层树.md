@@ -208,7 +208,7 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
         mDataSource.subscribe(dataSubscriber, mUiThreadImmediateExecutor);
     }
 
-从这段代码中我们就可以看出初步的逻辑了，它会创建一个`DataScriber`并将其绑定到`DataSource`上，随后只要`DataSource`处理好图片就会为绑定的`DataScriber`发布消息。通过在`AbstractDraweeController`中定义的`onFailureInternal`、`onNewResultInternal`、`onProgressUpdateInternal`来对DrqaweeHierarchy做相应的改动，从而控制显示层。
+从这段代码中我们就可以看出初步的逻辑了，它会创建一个`DataScriber`并将其绑定到`DataSource`上，随后只要`DataSource`处理好图片就会为绑定的`DataScriber`发布消息。通过在`AbstractDraweeController`中定义的`onFailureInternal`、`onNewResultInternal`、`onProgressUpdateInternal`来对DraweeHierarchy做相应的改动，从而控制显示层。
 
 ###3.5 使用ControllerListener
 
