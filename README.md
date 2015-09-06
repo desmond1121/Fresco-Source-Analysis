@@ -27,7 +27,7 @@
 
 作者总结了Fresco的架构图如下：
 
-![Fresco](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/Fresco.PNG)
+![Fresco](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/FrescoN.PNG)
 
 其中：
 
