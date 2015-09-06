@@ -214,25 +214,24 @@ public interface TransformCallback {
 
 之所以要设置这个回调，是因为本篇中的Drawable是有层次的。如果B 是 A的子图层，那应用在A上的变换矩阵自然应该应用到B上，所以提供这个回调可以让B获取应用在A上的变换矩阵，从而正确地进行绘制。
 
-**在本篇文章中出现的所有Drawable都实现了`TransformAwareDrawable `与`TransfromCallback`。** 可以在相当于视图顶层的`ArrayDrawable`中的`getTransfrom`中看出它的工作机制（实际上除了个别自身有缩放的图层如`ScaleTypeDrawable`, `MatrixDrawable`外的实现都是这样）：
+**在本篇文章中出现的所有Drawable都实现了`TransformAwareDrawable `与`TransfromCallback`。** 在`ArrayDrawable`中的`getTransfrom`中可以看出它的工作机制（实际上除了个别自身有缩放的图层如`ScaleTypeDrawable`, `MatrixDrawable`外的实现都是想以下这段代码一样）：
 
 ```java
   @Override
   public void getTransform(Matrix transform) {
+    //如果有父图层，则获取应用在父图层上的变换矩阵
     if (mTransformCallback != null) {
       mTransformCallback.getTransform(transform);
     } else {
+    //如果没有父图层，就获取单位矩阵
       transform.reset();
     }
   }
 ```
-即如果还有父图层（在Fresco中，`TransfromCallback`都是设置成父图层）的话，那么就调用父图层的`getTransfrom`方法，如果没有，则设置成单元矩阵（不变换）。
 
-在`ScaleTypeDrawable`和`MatrixDrawable`中会将自身的变换矩阵通过`Matrix.confat(Matrix m)`传给`transform`。
+在`ScaleTypeDrawable`和`MatrixDrawable`中会将自身的变换矩阵通过`Matrix.confat(Matrix m)`传给`transform`。如此一来就实现了变换矩阵向下传递的功能。
 
-如此一来就实现了变换矩阵向下传递的功能。
-
-而`VisibilityAwareDrawable`的意思就更好理解了，它是与`VisibilityCallback`搭配使用的。它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）和在自身绘制时发生通知的回调(`onDraw()`)。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
+`VisibilityAwareDrawable`与`VisibilityCallback`搭配使用，它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）和在自身绘制时发生通知的回调(`onDraw()`)。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
 
 ##类图
 
