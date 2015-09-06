@@ -136,7 +136,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 它在创造过程中主要做了两件事：
 
 1. 创建一个Consumer，在newResult、Failure、Cancel、ProgressUpdate几个状态函数中调用自己的相应实现；
-2. 对之前创造出来的的Producer调用`produceResults(Consumer consumer, ProducerContext context)`，让它开始加载数据。
+2. 对之前根据ImageRequest创造出来的的Producer调用`produceResults(Consumer consumer, ProducerContext context)`，让它开始加载数据。
 
 我们用一个直观的图来看看当Producer产生新结果(newResult)时的调用顺序是什么样的：
 
