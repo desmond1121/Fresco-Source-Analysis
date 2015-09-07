@@ -275,7 +275,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 - `DecodeProducer` 将nextProducer产生的EncodedImage解码。**解码在后台线程中执行，可以在ImagePipelineConfig中通过`setExecutorSupplier`来设置线程池数量，默认为最大可用的处理器数**；
 - `WebpTranscodeProducer` 若nextProducer产生的EncodedImage为WebP格式，则将其解码成`DecodeProducer`能够处理的EncodedImage。解码在后代进程中进行。
 
-以上所有的Producer（包括元Producer都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索）。
+以上所有的Producer（包括元Producer）都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索。
 
 ###2.5 包装Consumer
 
