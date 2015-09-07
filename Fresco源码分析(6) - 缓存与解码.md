@@ -212,11 +212,19 @@ DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也�
         }
     }
 
-**这个函数并没有直接提供要写入的数据**，而是在`updateResource`函数中通过`WriterCallback`实现的自定义写入函数将数据写到temporary中，会在。我们看到它在插入的时候会首先创建临时文件（此时多个任务可以并行地操作）。。
+我们看到它在插入的时候会首先创建临时文件（此时多个任务可以并行地操作），而在将temporary数据commit到描述符指定的文件中是同步操作。
+
+**注意：这个函数并没有直接提供要写入的数据**，而是在`updateResource`函数中通过`WriterCallback`实现的自定义写入函数将数据写到temporary中，会在[缓冲缓存层](https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(6)%20-%20%E7%BC%93%E5%AD%98%E4%B8%8E%E8%A7%A3%E7%A0%81.md#133-缓冲缓存层)中进一步解释。
+
+此外，它的删除资源操作`remove`函数也是同步的。
 
 ###1.3.3 缓冲缓存层
 
+缓冲缓存层BufferedDiskCache将缓存层进行包装，它主要多了三个功能：
 
+1. 提供写入缓冲StagingArea，所有要写入的数据在发出写入命令到最终写入之前会存储在这里，在查找缓存的时候会首先在这块区域内查找，若命中则直接返回；
+2. 提供了写入数据的办法，在`writeToDiskCache`中可以看出它提供的`WriterCallback`将要写入的`EncodedImage`转码成输入流；
+3. 将get、put两个方法放在后台线程中运行（get时在缓冲区域查找时除外），分别都是容量为2的线程池。
 
 ###1.3.4 自定义参数
 
@@ -224,10 +232,10 @@ DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也�
 
 DiskCacheConfig使用Builder模式创建，它可以自定义缓存路径、缓存文件夹名称、缓存池大小等，具体自定义内容可以参见[DiskCacheConfig](http://fresco-cn.org/javadoc/reference/com/facebook/cache/disk/DiskCacheConfig.html)。
 
-
 ##2 解码
 
 Fresco通过将图片字节码解析成Bitmap并通过将它放在ashmem中来达到一个高效内存应用，在本节中我们将探索它是如何做到的。
+
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
