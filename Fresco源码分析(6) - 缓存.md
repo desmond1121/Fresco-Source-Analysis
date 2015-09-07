@@ -16,7 +16,7 @@ Fresco中专门用于缓存键的接口，有这两种类实现了`CacheKey`：
 
 已解码的内存缓存（BitmapMemoryCache）与未解码的内存缓存（EncodedMemoryCache）实现**唯一区别**就是已解码内存缓存的数据是CloseableReference<[CloseableBitmap][Closeable]>而未解码内存缓存的数据是CloseableReference<PooledByteBuffer>。即他们的实现方式一样，区别仅仅在于**资源的测量与释放方式不同**。它们使用`ValueDescriptor`来描述不同资源的数据大小，使用不同的`ResourceReleaser`来释放资源。
 
-###2.1 LRU缓存载体-CountingHruMap
+###2.1 LRU缓存载体-CountingLruMap
 
 内存缓存中使用了LRU(Least Recent Used)来提高缓存功能，我们来看一下Fresco中实现它的逻辑。
 
