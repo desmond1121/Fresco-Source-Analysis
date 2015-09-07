@@ -110,37 +110,124 @@ Fresco使用`InstrumentedMemoryCache`包装了`CountingMemoryCache`，主要增�
 
 ##1.3 文件缓存
 
-由于文件缓存是直接存储在磁盘上的，所以它的实现方式与内存缓存不同，而且带有缓冲区域，所以更加复杂。
+由于文件缓存是直接存储在磁盘上的，所以它的实现方式与内存缓存不同，而且带有缓冲区域，所以更加复杂。我总结它一共有三层内容：文件存储层，文件缓存层，缓冲缓存层。
 
-###1.3.1 文件存储实现者DiskStorage
+###1.3.1 文件存储层
 
-`DefaultDiskStorage`负责Fresco中存取文件的逻辑与实现，它是内存与磁盘之间的纽带，具体有以下功能：
+文件缓存都是将实际的文件存储在存储设备中，Fresco的文件存储有两种格式的文件：
 
-- `getResource(String resourceId, Object debugInfo)` 获取描述符指向的文件；
+1. `.cnt` 实际存储的内容文件
+2. `.tmp` 临时文件
+
+Fresco中定义了`BinaryResource`来封装文件对象，你可以通过它获取文件的输入流、字节码等。此外，Fresco定义了每个文件的唯一描述符，此描述符由`CacheKey`的`.toString()`导出字符串的SHA-1哈希码再经过Base64加密得出。
+
+文件存储层有两个重要工具：DefaultDiskStorageSupplier与DefaultDiskStorage。
+
+`DefaultDiskStorageSupplier`可以用来创建缓存文件目录及获取到对应的`DefaultDiskStorage`，是一个典型的[Supplier][Supplier]。
+
+`DefaultDiskStorage`是文件操作者，它实现了`DiskStorage`接口，负责Fresco中存取文件的逻辑与实现，具体有以下功能：
+
+- `getEntries()` 获取缓存目录下所有文件的`Entry`（Entry对象中存储着文件的BinaryResource、TimeStamp及大小）。
+- `getResource(String resourceId, Object debugInfo)` 获取描述符指向的文件，更新时间戳；
 - `contains(String resourceId, Object debugInfo)` 检查是否包含描述符指向的文件；
-- `touch(String resourceId, Object debugInfo)` 检查是否包含描述符指向的文件，若包含，则更新该文件被访问的时间；
-- `createTemporary(String resourceId, Object debugInfo)` 从描述符指向的文件中提取`BinaryResource`；
-- `commit(String resourceId, BinaryResource temporary, Object debugInfo)` 将`BinaryResource`写入描述符指向的文件中；
-- `ong remove(String resourceId)` 删除描述符指向的文件，正常返回被删除文件的大小，文件不存在则返回0，其他返回-1。
+- `createTemporary(String resourceId, Object debugInfo)` 以指定描述符创建临时文件；
+- `commit(String resourceId, BinaryResource temporary, Object debugInfo)` 将`BinaryResource`写入描述符指向的文件中，更新时间戳；
+- `remove(String resourceId)` 删除描述符指向的文件，正常返回被删除文件的大小，文件不存在则返回0，其他返回-1。
 
-###1.3.2 DiskStorageSupplier
+###1.3.2 文件缓存层
 
-Fresco使用`DefaultDiskStorageSupplier`提供文件缓存各种底层功能，主要包括以下几个：
+DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也使用了相应的LRU技术提高缓存效率，我们来看看它是怎么实现的。
 
-- `get()` 返回存储对象，当需要创建或重新创建存储目录时会创建文件目录。
+####1.3.2.1 LRU实现
 
-###1.3.2 缓冲区域StagingArea
+在evictAboveSize中我们可以看到所使用的LRU逻辑：
 
-###1.3.n 自定义参数
+    private void evictAboveSize(
+            long desiredSize,
+            CacheEventListener.EvictionReason reason) throws IOException {
+        DiskStorage storage = mStorageSupplier.get();
+        Collection<DiskStorage.Entry> entries;
+        try {
+            entries = getSortedEntries(storage.getEntries());
+        } catch (IOException ioe) {
+            //异常捕捉
+        }
+
+        //要删除的数据量
+        long deleteSize = mCacheStats.getSize() - desiredSize;
+
+        //记录删除数据数量
+        int itemCount = 0;
+
+        //记录删除数据的大小
+        long sumItemSizes = 0L;
+
+        for (DiskStorage.Entry entry : entries) {
+            if (sumItemSizes > (deleteSize)) {
+                break;
+            }
+            long deletedSize = storage.remove(entry);
+            if (deletedSize > 0) {
+                itemCount++;
+                sumItemSizes += deletedSize;
+            }
+        }
+        mCacheStats.increment(-sumItemSizes, -itemCount);
+        storage.purgeUnexpectedResources();
+        reportEviction(reason, itemCount, sumItemSizes);
+    }
+
+我们可以看到在这个函数中它获取两个输入：期望达到的剩余容量及缓存事件监听者。接下来以以下顺序进行操作：
+
+1. 获取存储着缓存目录下所有文件`Entry`的Collection，以它们被访问时间进行排序，最近被访问的Entry在后面；
+2. 从Collection的头部开始删除文件，**直到剩余容量达到desiredSize为止**；
+3. 更新容量，删除不需要的文件（临时文件等），汇报缓存工作。
+
+在`maybeEvictFilesInCacheDir`函数中我们可以看到当缓存过载时会**以缓存容量的90%为目标**进行清理。
+
+####1.3.2.2 同步操作
+
+在文件缓存中维持一个对象`mLock`，该对象就是为了让各个操作保持同步。我们来看一下`DiskStorageCache`中的几个重要底层操作函数及它们的同步情况：
+
+- `getResource(final CacheKey key)` **同步操作**，从指定CacheKey获取文件描述符，如果存在则返回它的`BinaryResource`；
+- `createTemporaryResource(String resourceId, CacheKey key)` **非同步操作**，检查是否需要清理缓存，如果需要则进行清理，之后创建临时文件并返回它的BinaryResource；
+- `deleteTemporaryResource(BinaryResource temporaryResource)` **非同步操作**，删除BinaryResource指向的文件；
+- `BinaryResource commitResource(String resourceId, CacheKey key, BinaryResource temporary)` **同步操作**，将temporary写入文件描述符指向的文件；
+
+这么做主要是要保证写入最终缓存文件的原子性，我们可以看它提供的写入缓存函数:
+
+    public BinaryResource insert(CacheKey key, WriterCallback callback) throws IOException {
+        mCacheEventListener.onWriteAttempt();
+        final String resourceId = getResourceId(key);
+        try {
+            BinaryResource temporary = createTemporaryResource(resourceId, key);
+            try {
+                mStorageSupplier.get().updateResource(resourceId, temporary, callback, key);
+                return commitResource(resourceId, key, temporary);
+            } finally {
+                deleteTemporaryResource(temporary);
+            }
+        } catch (IOException ioe) {
+            //异常处理
+        }
+    }
+
+**这个函数并没有直接提供要写入的数据**，而是在`updateResource`函数中通过`WriterCallback`实现的自定义写入函数将数据写到temporary中，会在。我们看到它在插入的时候会首先创建临时文件（此时多个任务可以并行地操作）。。
+
+###1.3.3 缓冲缓存层
+
+
+
+###1.3.4 自定义参数
 
 可以通过调用`ImagePipelineConfig.setMainDiskCacheConfig(DiskCacheConfig mainDiskCacheConfig)`设置文件缓存。
 
-DiskCacheConfig使用Builder模式创建，它可以自定义缓存目录、缓存文件名、缓存池大小等，具体自定义内容可以参见[DiskCacheConfig](http://fresco-cn.org/javadoc/reference/com/facebook/cache/disk/DiskCacheConfig.html)。
+DiskCacheConfig使用Builder模式创建，它可以自定义缓存路径、缓存文件夹名称、缓存池大小等，具体自定义内容可以参见[DiskCacheConfig](http://fresco-cn.org/javadoc/reference/com/facebook/cache/disk/DiskCacheConfig.html)。
+
 
 ##2 解码
 
 Fresco通过将图片字节码解析成Bitmap并通过将它放在ashmem中来达到一个高效内存应用，在本节中我们将探索它是如何做到的。
-
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
