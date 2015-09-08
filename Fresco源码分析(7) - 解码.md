@@ -37,25 +37,9 @@ Fresco中针对不同版本使用了不同的图片解码工具，在分析它�
 
 适用于Android 2.3系统的解码工具。
 
-###1.4 对比
-
-|解码工具|适用系统|`inJustDecodeBounds`|`inDither`|`inPreferredConfig`|`inMutable`|
-|:--:|:--:|
-
 ##1 解码实现
 
 `ImageDecoder`封装了解码工具，它主要的被使用函数就是`decodeImage`，会根据图像格式进行相应解码。会依照JPEG, Gif, AnimatedWebp，静态图片的顺序检查图片格式，符合则调用相应函数（未知图片格式直接抛出异常）。
-
-
-
-
-###1.1 Jpeg解码
-
-此部分的功能函数于PlatformBitmapFactory的`decodeJPEGFromEncodedImage`函数中可以见到，它会在Android 5.0及以上的环境调用`ArtBitmapFactory`的解码函数，在其他环境下调用`DalvikBitmapFactory`的解码函数，我们分别看看他们是怎么实现的。
-
-####1.1.1 5.0及以上系统解码
-
-
 
 ####1.1.n 自定义JPEG解码
 
@@ -114,9 +98,6 @@ Fresco中使用JobScheduler来管理解码任务（JobRunnable），它保证同
             EncodedImage.closeSafely(encodedImage);
         }
     }
-
-
-
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
