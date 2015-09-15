@@ -25,7 +25,9 @@
 
 ### 待完成
 
-- [Fresco源码分析(7) - 解码][7] Fresco的解码能力是它的一大特色，它会根据不同平台放置解析完成的图片，根据不同的渠道（网络、本地）处理渐进式JPEG图。由于作者的能力与时间有限，在图像解码方面的知识储备不足，解码部分暂未完成，希望有能力的朋友能够进行分析，谢谢！
+- Fresco源码分析(7) - 解码
+
+Fresco的解码能力是它的一大特色，它会根据不同平台放置解析完成的图片，根据不同的渠道（网络、本地）处理渐进式JPEG图。由于作者的能力与时间有限，在图像解码方面的知识储备不足，解码部分暂未完成，希望有能力的朋友能够进行分析，谢谢！
 
 ###总结
 
@@ -46,7 +48,6 @@
 [4]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(4)%20-%20%E5%BC%82%E6%AD%A5%E5%8A%A0%E8%BD%BD%E6%95%B0%E6%8D%AE.md
 [5]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(5)%20-%20Producer%E6%B5%81%E6%B0%B4%E7%BA%BF.md
 [6]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(6)%20-%20%E7%BC%93%E5%AD%98.md
-[7]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(7)%20-%20%E8%A7%A3%E7%A0%81.md
 
 如有错误，希望指正，谢谢！
 
