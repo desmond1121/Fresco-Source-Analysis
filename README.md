@@ -3,6 +3,8 @@
 
 ## 导读
 
+本系列文章目的是分析源码，具体使用方法虽然会涉及，但不多。你应该在对Fresco的使用方法有一定了解之后再来阅读这些文章，推荐[Fresco中文文档](http://fresco-cn.org/docs/)来了解它的使用方法。
+
 ### Fresco中几个基本设计模式
 
 在[Wiki-设计模式](https://github.com/desmond1121/Fresco-Source-Analysis/wiki/Fresco%E4%B8%AD%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F)中介绍了Fresco中用到的几个基本设计模式，供读者参考。
