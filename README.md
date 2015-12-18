@@ -1,5 +1,5 @@
 #Fresco-Source-Analysis
-中文的Fresco源码解读，欢迎Issue讨论！
+中文的Fresco源码解读，分析版本：0.7.0。欢迎Issue讨论！
 
 ## 导读
 

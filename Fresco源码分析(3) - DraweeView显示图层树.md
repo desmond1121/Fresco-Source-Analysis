@@ -25,7 +25,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - `void init(Context context)` 初始化`DraweeHolder`；
 - `void setHierarchy(DH hierarchy)` 设置图层树，会调用 `super.setImageDrawable(mDraweeHolder.getTopLevelDrawable())`将图层树显示出来；
 - `void setController(@Nullable DraweeController draweeController)` 设置`DraweeController`，像`setHierarchy`一样同样也会显示图层树；
-- `Drawable getTopLevelDrawable()` 获取顶层图层Drawable；
+- `Drawable getTopLevelDrawable()` 获取通过包装好的图层树(见[DraweeHierarchy构建图层][2]；
 - `View`中的`onAttachedToWindow()`、 `onDetachedFromWindow()`、 `onStartTemporaryDetach()`、 `onFinishTemporaryDetach()` 四个回调函数，提供当视图被绑定/解绑到指定布局上时的回调函数，它们会触发`DraweeHolder`的`onDetach()`或`onAttach()`；
 - `void onTouchEvent(MotionEvent event)` 提供触屏反应。
 
@@ -41,7 +41,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 `DraweeHolder`充斥在`DraweeView`的各个位置，每个`DraweeView`的函数都是由它的对应函数执行的。它随着`DraweeView`的产生而初始化。在深入了解视图绘制之前，我们有必要了解它是做什么的。
 
-它主要是用来维持`DraweeHierarchy`和`DraweeController`之间的沟通的。通过`create( DH hierarchy, Context context)`来创建实例，`DraweeHierarchy`通过第一个参数赋值，其中第二个参数用于`registerWithContext(Context)`（该函数暂时没有完善好）。
+`DraweeHolder`是用来维持`DraweeHierarchy`和`DraweeController`之间的沟通的。通过`create( DH hierarchy, Context context)`来创建实例，`DraweeHierarchy`通过第一个参数赋值，其中第二个参数用于`registerWithContext(Context)`（该函数暂时没有完善好）。
 
 它有几个主要使用的函数：
 - `void setHierarchy(DH hierarchy)` 在`DraweeView.setHierarchy`中被调用，将DraweeHierarchy传给持有的DraweeController；
@@ -64,7 +64,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - ``XXXImage`/`XXXImageScaleType` 各图层要显示的Drawable（除了目标显示图层）及它们的`ScaleType`；
 - `RoundingParams`中的参数
 
-在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能使用一边，然后搭配`aspectRatio`使用。
+在它的Measure过程中，会依次判断是否高度、宽度属性中有`wrap_content`，会将先判断到的属性更正为实际长度。**但是Fresco并不支持使用wrap_content。**如果你非要使用，只能在width/height中使用一侧，然后搭配`aspectRatio`使用。
 
 **在GenericDraweeView获取完xml属性之后，它会通过`GenericDraweeHierarchyBuilder.build`创造一个与之对应的GenericDraweeHierarchy作为默认使用的图层树，并调用`setHierarchy`方法将其传递给`DraweeHolder`并显示出来。**
 

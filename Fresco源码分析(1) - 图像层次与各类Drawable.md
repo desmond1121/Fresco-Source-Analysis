@@ -10,7 +10,7 @@
 
 如果你使用过Fresco这个强大的库之后，你就知道它可以在一个图像的加载、绘制过程中实现极大的定制化。你可以设置进度条来显示图片加载/下载的进度，可以设置占位图等到图片加载/下载成功后再显示目标图片，可以让在加载/下载失败后显示失败图片（更多功能参考[Fresco中文文档](http://fresco-cn.org/docs/)）。Fresco将进度条、占位图、失败图都作为图像的一层视图来管理，这部分仅仅负责视图层次绘制，将负责视图功能部分与逻辑部分尽可能实现解耦。
 
-图像层次要和Drawable一次分析。Fresco中定义了许多Drawable，它们都直接或间接继承了`Drawable`，但是各自的功能是不一样的。经过总结，我认为其中一共有三种功能的Drawable：层次型、容器型和视图型。直接上源码的一个视图例子就好理解了，作者进行了适当修改与翻译。
+Fresco中定义了许多Drawable，它们都直接或间接继承了`Drawable`，但是各自的功能是不一样的。经过总结，我认为其中一共有三种功能的Drawable：层次型、容器型和视图型。直接上源码的一个视图例子就好理解了，作者进行了适当修改与翻译。
 
  o 层次型Drawable（维持图层）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/> |　　　　|<br/>|　　　　--- 视图型Drawable（存放占位图）<br/> |<br/> ------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　----- 容器型Drawable（可多次设置内容）<br/> |　　　　　　　|<br/> |　　　　　　　--- 视图型Drawable（存放目标显示图片）<br/> |<br/>------ 容器型Drawable（可对内容进行缩放）<br/>|　　　　|<br/>|　　　　--- 视图型Drawable（存放重试图片）<br/>|<br/>------ 容器型Drawable（可对内容进行缩放）<br/> 　　　　|<br/>  　　　　--- 视图型Drawable（存放失败图片）
 
@@ -25,7 +25,7 @@
 ###2.1 ArrayDrawable
 
 `ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点有两处：
-- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会跳过暂时不需要绘制的图层（通过设置图层透明度）；
+- 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会跳过暂时不需要绘制的图层；
 - 在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
 
 ###2.2 FadeDrawable
