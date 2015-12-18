@@ -25,7 +25,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - `void init(Context context)` 初始化`DraweeHolder`；
 - `void setHierarchy(DH hierarchy)` 设置图层树，会调用 `super.setImageDrawable(mDraweeHolder.getTopLevelDrawable())`将图层树显示出来；
 - `void setController(@Nullable DraweeController draweeController)` 设置`DraweeController`，像`setHierarchy`一样同样也会显示图层树；
-- `Drawable getTopLevelDrawable()` 获取通过包装好的图层树(见[DraweeHierarchy构建图层][2]；
+- `Drawable getTopLevelDrawable()` 获取通过包装好的图层树(见[DraweeHierarchy构建图层][2])；
 - `View`中的`onAttachedToWindow()`、 `onDetachedFromWindow()`、 `onStartTemporaryDetach()`、 `onFinishTemporaryDetach()` 四个回调函数，提供当视图被绑定/解绑到指定布局上时的回调函数，它们会触发`DraweeHolder`的`onDetach()`或`onAttach()`；
 - `void onTouchEvent(MotionEvent event)` 提供触屏反应。
 
