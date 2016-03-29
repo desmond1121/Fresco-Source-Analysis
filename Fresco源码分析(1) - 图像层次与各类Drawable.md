@@ -237,7 +237,7 @@ public interface TransformCallback {
 
 由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
 
-![Class Diagram](http://desmond.com/image/class_diagram_drawables.PNG)
+![Class Diagram](http://desmondyao.com:1121/image/class_diagram_drawables.PNG)
 
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md

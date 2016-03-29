@@ -8,7 +8,7 @@
 ##1 时序图
 
 根据Uri生成`Producer`和`DataSource`的过程概览：
-![DataSource](http://desmondyao.com/image/sequence_diagram_setUriSeq2.PNG)
+![DataSource](http://desmondyao.com:1121/image/sequence_diagram_setUriSeq2.PNG)
 
 以上的时序图是精简过的，意在表达各个组件之间的调用顺序和功能。
 
