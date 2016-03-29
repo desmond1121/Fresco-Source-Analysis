@@ -9,7 +9,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 首先可以用以下这个图初步理解SimpleDraweeView在调用了`setUri(Uri uri)`之后的流程：
 
-![DraweeView](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/sequence_diagram_setUriSeq1.PNG)
+![DraweeView](http://desmondyao.com/image/sequence_diagram_setUriSeq1.PNG)
 
 可以将这张图描述为以下信息：
 
@@ -225,7 +225,7 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 ##4 类图
 
-![DraweeView Diagram](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/class_diagram_draweeview.PNG)
+![DraweeView Diagram](http://desmondyao.com/image/class_diagram_draweeview.PNG)
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20GenericDraweeHierarchy%E6%9E%84%E5%BB%BA%E5%9B%BE%E5%B1%82.md
