@@ -8,7 +8,7 @@
 ##1 时序图
 
 根据Uri生成`Producer`和`DataSource`的过程概览：
-![DataSource](http://image.desmondyao.com/fresco_analysis/sequence_diagram_setUriSeq2.PNG)
+![DataSource](http://desmondyao.com/image/fresco/sequence_diagram_setUriSeq2.PNG)
 
 以上的时序图是精简过的，意在表达各个组件之间的调用顺序和功能。
 
@@ -140,7 +140,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 
 我们用一个直观的图来看看当Producer产生新结果(newResult)时的调用顺序是什么样的：
 
-![NewResult](http://desmondtu.oss-cn-shanghai.aliyuncs.com/Fresco/NewResultExample.PNG)
+![NewResult](http://desmondyao.com/image/fresco/NewResultExample.PNG)
 
 当失败(Failure)、取消(Cancel)、更新进度(ProgressUpdate)时的操作流程是类似的。我们可以看出，**`AbstractProducerToDataSourceAdapter`是连接Producer与DataSource的纽带。**
 
