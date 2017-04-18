@@ -1,11 +1,11 @@
-#Fresco源码分析(5) - Producer流水线
+# Fresco源码分析(5) - Producer流水线
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
 Producer是缓存与DataSource之间的桥梁，它非常重要！在这一章的内容中，我们来分析Fresco中的Producer是怎么通过ImageRequest建立起数据请求通道的。你可以在[Wiki-Producer][Producer]中对Producer&Consumer模式及它们在Fresco中的原型有个初步的理解。
 
-##1 Fresco缓存机制
+## 1 Fresco缓存机制
 
 在阅读后面的内容前，你需要先对Fresco的缓存有一个感性的理解。这里官方文档[Image Pipeline介绍](http://fresco-cn.org/docs/intro-image-pipeline.html#_)及[缓存](http://fresco-cn.org/docs/caching.html#_)已经说得很好了，读者可以直接参考它。
 
@@ -17,7 +17,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 如果这三个缓存都没有命中，则会从网络或者本地加载，加载完成再缓存到各个缓存中。
 
-###1.1 缓存载体
+### 1.1 缓存载体
 
 **未解码内存缓存的载体是`EncodedImage`**，它封装了未解码图片的所有字节码，包括图片数据、尺寸、旋转角度和缩放尺寸。它使用`PooledByteBuffer`存储字节码，可以直接通过`CloseableReference<PooledByteBuffer>`构造。
 
@@ -30,7 +30,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 更多缓存机制可以参考后续分析[Fresco源码分析(6)-缓存][6]，此处你仅仅需要理解缓存结构即可。
 
-##2 元Producer
+## 2 元Producer
 
 **Fresco将Producer组织成流水线来进行多层内容顺序访问。** 我做了一个流程图，供读者参考。略有精简，不过已经能够代表大概意思：
 
@@ -38,7 +38,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 图中每一个方框都代表一个Producer，**蓝色框内的Producer会在缓存中取数据。**在产生一个Uri的时候，最先在Bitmap内存缓存中查找，若命中则返回，否则将会调用下层Producer的`produceResult`函数。大部分Producer都是其中间作用，有几个在末端的Producer是在之前所有缓存都没有命中后要去文件或网络上获取数据的，我将他们称做**元Producer**。一共有两大类，他们是LocalProducer（负责本地数据存取）及NetworkProducer（负责网络数据存取）。
 
-###2.1 本地文件获取
+### 2.1 本地文件获取
 
 首先介绍从本地获取文件的Producer的基类-`LocalFetchProducer`，我们来看看它的`produceResults`中做了什么事：
 
@@ -76,7 +76,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 它没有实现`getEncodedImage`。这也是合理的，因为获取不同种类资源的方法不同。继承LocalFetchProducer的本地Producer可以通过重写`getEncodedImage`实现获取各类资源。
 
-####2.1.1 StatefulRunnable
+#### 2.1.1 StatefulRunnable
 
 `StatefulProducerRunnable`继承了`StatefulRunnable`。首先看StatefulRunnable中的run函数：
 
@@ -123,7 +123,7 @@ Fresco会一级一级地去检查缓存，一共有三级缓存：
 
 而留下`getResult`与`disposeResult`未实现。这下就很明确了，它在数据获取成功、失败、取消时分别会通知Comsumer执行相应函数。至于要怎么获取、释放数据，交由具体实现者来定。
 
-###2.2 几种基本的LocalProducer
+### 2.2 几种基本的LocalProducer
 
 LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBufferBackedEncodedImage`供继承类使用，我们来看看几个继承`LocalProducer`的类是怎么重写`getEncodedImage`的吧：
 
@@ -137,9 +137,9 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 - `LocalExifThumbnailProducer` 可以获取Exif图像的Producer；
 - `LocalVideoThumbnailProducer` 可以获取视频缩略图的Producer。
 
-###2.3 网络文件获取
+### 2.3 网络文件获取
 
-####2.3.1 NetworkFetcher
+#### 2.3.1 NetworkFetcher
 
 `NetworkFetcher`是Fresco用以获取数据，计算下载进度，提供下载回调函数的工具。它使用`fetch(FetchState fetchState, Callback callback)`来进行网络请求，其中两个参数的意义分别为：
 
@@ -199,7 +199,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 注：**默认的网络请求线程池容量为3，无法通过API修改**。
 
-###2.3.2 NetworkFetchProducer
+### 2.3.2 NetworkFetchProducer
 
 `NetworkFetchProducer`是专门用于在网络上获取数据的Producer。我们看看它的`produceResults`代码：
 
@@ -251,7 +251,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 我们看到当InputStream中还有数据时就会想outputStream中写，计算并更新进度。在`maybeHandleIntermediateResult`会判断当两次获取数据间隔超过100ms即会通知Consumer更新一次数据。最后如果InputStream读取完了会再通知Consumer读取一次数据。
 
-###2.3 缓存Producer
+### 2.3 缓存Producer
 
 这类Producer负责从缓存中寻找数据，在初始化都会传入一个nextProducer，当没有获取到缓存时调用下一个Producer的`productResult(Consumer consumer, ProducerContext context)`方法。主要有这几种：
 
@@ -263,7 +263,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 - `EncodedCacheKeyMultiplexProducer` 是`MultiplexProducer`的子类，nextProducer为`EncodedMemoryCacheProducer`，将多个拥有相同未解码内存缓存键（具体见[Fresco源码分析(6) - 缓存][6]）的ImageRequest进行“合并”，若缓存命中，它们都会获取到该数据；
 - `DiskCacheProducer` 在文件内存缓存中获取数据；若未找到，则在nextProducer中获取数据，并在获取到数据的同时将其缓存
 
-###2.4 功能Producer
+### 2.4 功能Producer
 
 这类Producer的初始化也都会传入一个nextProducer，它们的作用只是对nextProducer产生的结果进行处理，主要有这几种：
 
@@ -277,7 +277,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 以上所有的Producer（包括元Producer）都是从`ProducerFactory`中新建的，有兴趣的读者可以自行再去探索。
 
-###2.5 包装Consumer
+### 2.5 包装Consumer
 
 **Producer使用数据获取时向下传递，Consumer得到结果时是向上传递。**所以几乎每个Producer都会将上层Producer传下来的Consumer进行包装，在他们的NewResult中增加一些功能，由此来达到自己的目的。我们简单看个例子，如果BitmapMemoryCacheProducer在已解码的内存缓存中没有找到数据，它就会调用nextProducer的`productResult(Consumer consumer, ProducerContext context)`办法。但是它会对传入的Consumer进行一定包装，我们看看相应代码：
 
@@ -339,7 +339,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 3. 当没有结束传递时，如果收到数据的质量大于缓存中对应数据的质量（如果存在的话）时，则传给上层Consumer处理并返回；
 4. 数据传递结束，将得到的数据缓存起来，更新进度，通知上层Consumer处理。
 
-##3 Producer流水线
+## 3 Producer流水线
 
 `ProducerSequenceFactory`是专门将生成各类链接起来的Producer，根据其中的逻辑，我将可能涉及层次最深的Uri——网络Uri的Producer链在此列出，它会到每个缓存中查找数据，最后如果都没有命中，则会去网络上下载。
 
@@ -361,7 +361,7 @@ LocalProducer提供了将`InputStream`转化成`EncodedImage`的函数`getByteBu
 
 我们看到所有的获取数据操作都通过ThreadHandoffProducer包装到了后台进程中执行。加粗的Producer是会在缓存中查找数据的Producer，每一级缓存如果命中，则会直接返回结果而不会再传递到下一个Producer中。
 
-##4 结语
+## 4 结语
 
 Producer是理解Fresco处理缓存的一个很好入手点，本章中仅仅是分析其脉络及一些基础原理，如果有兴趣的读者可以自行再去探究。
 
