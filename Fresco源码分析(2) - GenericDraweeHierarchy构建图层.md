@@ -1,10 +1,10 @@
-#Fresco源码分析(2) - GenericDraweeHierarchy构建图层
+# Fresco源码分析(2) - GenericDraweeHierarchy构建图层
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121) 
 
 在本篇的内容中，作者将初步介绍Fresco是怎么构建图像层次的。
 
-##1 引言
+## 1 引言
 
 `DraweeHierarchy`是所有`Hierarchy`的父接口，它内部只提供了一个基本而又不可缺失的功能：获取图层树的父节点图层。不过仅仅只有这个功能是不够的，Fresco紧接着用接口`SettableHierarchy`来继承它，声明一些具体的功能：
 
@@ -18,7 +18,7 @@
 这几个函数都会在后面起到比较大的作用。
 在接下来的内容中会介绍本节的主角：**GenericDraweeHierarchy**。它实现了`SettableHierarchy`接口，你可以从这个类中看到大部分Fresco处理图层的逻辑。
 
-##2 图层封装者 - GenericDraweeHierarchy
+## 2 图层封装者 - GenericDraweeHierarchy
 
 请记住这句话：**GenericDraweeHierarchy**只是负责装载每个图层信息的载体。**如果你直接使用它去显示图片，那就意味着你将放弃Fresco提供的加载与缓存机制。**你可以认为这么做之后`SimpleDraweeView`就退化成了一个简单的`ImageView`，只会将`ArrayDrawable`中的所有设置的图片按顺序显示出来。具体的细节我们将在[Fresco源码分析(3) - DraweeView显示图层树][3]中讨论。
 
@@ -53,7 +53,7 @@
 
 这个Builder内部有大量的getter与setter，你可以为每个图层指定Drawable、ScaleType，以及目标显示图层还可以设置Matrix、Focus（配合`ScaleType`为`FOCUS_CROP`时使用）、ColorFilter。
 
-###2.2 初始化图层
+### 2.2 初始化图层
 
 我们来看一下`GenericDraweeHierarchy`，从中能够理解Fresco是怎么初始化图层的。
 
@@ -182,7 +182,7 @@
 ```
 在`resetFade()`中将占位图 、背景图层、覆盖图层显示出来。
 
-###2.3 需要注意的一点：一个Drawable实例只能与一个DraweeHierarchy绑定！
+### 2.3 需要注意的一点：一个Drawable实例只能与一个DraweeHierarchy绑定！
 
 如果绑定了多个DraweeHierarchy，会出问题。由于在初始化过程中它将Drawable数组赋值给`FadeDrawable`，而`FadeDrawable`又继承于`ArrayDrawable`，它会在初始化的时候为每个数组Drawable的`Drawable.Callback`设置为自己，若是`TransfromAwareDrawable`的话还会设置自己为`TransformCallback`。而我们可以在它的`setDrawable(int index, Drawable drawable)`函数中看到这么一段代码：
 
@@ -203,7 +203,7 @@
 ```
 可以看出，在替换图片时，它会将原来Drawable的这些回调都设置为null。由此很可能会导致Bug，请参考我的一篇翻译文章：[Android LayerDrawable 和 Drawable.Callback](https://github.com/bboyfeiyu/android-tech-frontier/blob/master/issue-24/Android%20LayerDrawable%20%E5%92%8C%20Drawable.Callback.md)。
 
-##3 类图
+## 3 类图
 
 由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
 
