@@ -5,14 +5,14 @@
 
 在这一章中，我将分析数据源`DataSource`的生成过程及它的作用。
 
-##1 时序图
+## 1 时序图
 
 根据Uri生成`Producer`和`DataSource`的过程概览：
-![DataSource](http://desmondyao.com/image/fresco/sequence_diagram_setUriSeq2.PNG)
+![DataSource](http://blog.desmondyao.com/image/fresco/sequence_diagram_setUriSeq2.PNG)
 
 以上的时序图是精简过的，意在表达各个组件之间的调用顺序和功能。
 
-##2 通过Url获取DataSourceSupplier
+## 2 通过Url获取DataSourceSupplier
 
 在[第三章末尾][3]我们讲到`DraweeControllerBuilder`会根据Uri初始化`DataSource`的[Supplier][Supplier]，那么现在来看看是怎么初始化的。
 
@@ -87,7 +87,7 @@
 
 上一节中我们获取了一个`AbstractproducerToDataSourceAdapter`作为`DataSource`，你可能对它的功能不太理解，这一节将介绍各类DataSource的功能。
 
-###3.1 基类
+### 3.1 基类
 
 DataSource的原型
 
@@ -129,7 +129,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 - `notifyDataSubscribers()` 通知所有绑定的DataSubscriber更新数据；
 - `setResult`/`setFailure`/`setProgress` 调用对应`setXXXInternal`，当其返回true时，调用`notifyDataSubscribers()`。
 
-###3.2 AbstractProducerToDataSourceAdapter
+### 3.2 AbstractProducerToDataSourceAdapter
 
 `AbstractProducerToDataSourceAdapter`也是一种DataSource，它继承`AbstractDataSource`，包装了Producer取数据的过程，非常重要，所以单独列出来。
 
@@ -140,7 +140,7 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 
 我们用一个直观的图来看看当Producer产生新结果(newResult)时的调用顺序是什么样的：
 
-![NewResult](http://desmondyao.com/image/fresco/NewResultExample.PNG)
+![NewResult](http://blog.desmondyao.com/image/fresco/NewResultExample.PNG)
 
 当失败(Failure)、取消(Cancel)、更新进度(ProgressUpdate)时的操作流程是类似的。我们可以看出，**`AbstractProducerToDataSourceAdapter`是连接Producer与DataSource的纽带。**
 
@@ -157,13 +157,13 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 
 它会为列表中的每一个DataSource绑定一个DataSubscriber（`IncreasingQualityDataSourceSupplier.InternalDataSubscriber`），它负责保证每次只能获取清晰度更高的DataSource数据，获取数据同时会销毁数据清晰度更低的DataSource。
 
-####FirstAvailableDataSource
+#### FirstAvailableDataSource
 
 它内部维持着一个`AbstractDataSource`（可以说是`CloseableProducerToDataSourceAdapter`）列表，它会返回这里面首先能获取到数据的DataSource。
 
 同样，它也会为列表中的DataSource绑定DataSubscriber（`FirstAvailableDataSourceSupplier.InternalDataSubscriber`），如果数据加载成功，那么就设定指定DataSource为目标DataSource；如果加载数据失败，则跳转到列表下一个DataSource继续尝试加载。
 
-####SettableDataSource
+#### SettableDataSource
 
 它继承AbstractDataSource，并将重写`settResult`、`setFailure`、`setProgress`在内部调用父类的相应函数，**但是修饰符变成了public**（原来是protected）。即使用`SettableDataSource`时可以在外部调用这三个函数设置DataSource状态。一般用于在获取DataSource失败时直接产生一个设置为Failure的DataSource。
 
