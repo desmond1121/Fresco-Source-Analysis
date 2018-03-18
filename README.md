@@ -1,4 +1,4 @@
-#Fresco-Source-Analysis
+# Fresco-Source-Analysis
 中文的Fresco源码解读，分析版本：0.7.0。欢迎Issue讨论！
 
 ## 导读
@@ -36,7 +36,7 @@ Fresco的解码能力是它的一大特色，它会根据不同平台放置解�
 
 作者总结了Fresco的架构图如下：
 
-![Fresco](http://desmondyao.com/image/fresco/fresco.PNG)
+![Fresco](http://blog.desmondyao.com/image/fresco/fresco.PNG)
 
 其中：
 
