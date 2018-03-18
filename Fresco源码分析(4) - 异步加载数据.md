@@ -1,4 +1,4 @@
-#Fresco源码分析(4) - 异步加载数据
+# Fresco源码分析(4) - 异步加载数据
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
@@ -83,7 +83,7 @@
 
 至此我们就获取了所需要的DataSource，并将它设置给DraweeController。
 
-##3 各类DataSource
+## 3 各类DataSource
 
 上一节中我们获取了一个`AbstractproducerToDataSourceAdapter`作为`DataSource`，你可能对它的功能不太理解，这一节将介绍各类DataSource的功能。
 
@@ -149,9 +149,9 @@ Fresco接着实现了一个基础类`AbstractDataSource`，维持着IN_PROGRESS�
 - `CloseableProducerToDataSourceAdapter` 提供`create`方法创建实例，实现了`closeResult`方法，会在`AbstractDataSource`销毁时同时销毁收到的Result，**是主要使用的DataSouce**；
 - `ProducerToDataSourceAdapter` 提供`create`方法创建实例，没有实现别的方法。**此DataSource仅仅用于[预加载图片](http://fresco-cn.org/docs/using-image-pipeline.html#)！**
 
-###3.3 其他DataSource
+### 3.3 其他DataSource
 
-####IncreasingQualityDataSource
+#### IncreasingQualityDataSource
 
 它内部维持着一个`AbstractDataSource`（可以说是`CloseableProducerToDataSourceAdapter`）列表，**DataSource提供数据的清晰度由后往前递增**。
 

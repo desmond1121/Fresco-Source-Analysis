@@ -52,7 +52,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 特别地，`DraweeHolder`继承了`VisibilityCallback`，为`DraweeHierarchy.RootDrawable`提供回调：当图层的Visibility属性改变的时候对`DraweeController`调用`attachOrDetachController`操作，当图层不可见时释放资源。
 
-###2.2 GenericDraweeView
+### 2.2 GenericDraweeView
 
 `GenericDraweeView`就是使用`GenericDraweeHierarchy`图层树的视图，它承担了所有的xml属性交互工作。
 
@@ -68,7 +68,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 **在GenericDraweeView获取完xml属性之后，它会通过`GenericDraweeHierarchyBuilder.build`创造一个与之对应的GenericDraweeHierarchy作为默认使用的图层树，并调用`setHierarchy`方法将其传递给`DraweeHolder`并显示出来。**
 
-###2.3 SimpleDraweeView
+### 2.3 SimpleDraweeView
 
 在SimpleDraweeView中的函数就更少了，可以明确的说，它就只是将GenericDraweeHierarchy显示到UI界面上的空间而已。它比GenericDraweeView多出来的功能就是**它内部提供了最简单的DraweeController实现**。它有两个函数比较需要关注：
 
@@ -210,7 +210,7 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 从这段代码中我们就可以看出初步的逻辑了，它会创建一个`DataScriber`并将其绑定到`DataSource`上，随后只要`DataSource`处理好图片就会为绑定的`DataScriber`发布消息。通过在`AbstractDraweeController`中定义的`onFailureInternal`、`onNewResultInternal`、`onProgressUpdateInternal`来对DraweeHierarchy做相应的改动，从而控制显示层。
 
-###3.5 使用ControllerListener
+### 3.5 使用ControllerListener
 
 `ControllerListener` 提供`DraweeController`主要事件的回调功能，主要有这几个事件：
 
