@@ -1,4 +1,4 @@
-#Fresco源码分析(1) - 图像层次与各类Drawable
+# Fresco源码分析(1) - 图像层次与各类Drawable
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
@@ -6,7 +6,7 @@
 
 首先介绍几种Fresco中的图像层次，了解它们会帮助你理解Fresco加载图像的原理。
 
-##1 引论：给图像分层次是什么作用？
+## 1 引论：给图像分层次是什么作用？
 
 如果你使用过Fresco这个强大的库之后，你就知道它可以在一个图像的加载、绘制过程中实现极大的定制化。你可以设置进度条来显示图片加载/下载的进度，可以设置占位图等到图片加载/下载成功后再显示目标图片，可以让在加载/下载失败后显示失败图片（更多功能参考[Fresco中文文档](http://fresco-cn.org/docs/)）。Fresco将进度条、占位图、失败图都作为图像的一层视图来管理，这部分仅仅负责视图层次绘制，将负责视图功能部分与逻辑部分尽可能实现解耦。
 
@@ -18,17 +18,17 @@ Fresco中定义了许多Drawable，它们都直接或间接继承了`Drawable`�
 
 这个例子充分描述了一个图像的层次，当然也可以在设置的时候往里面自行设置所需要的图层。
 
-##2 层次型Drawable
+## 2 层次型Drawable
 
 在这一节中介绍的Drawable并不直接负责具体图像绘制，而是负责组建图像层次。
 
-###2.1 ArrayDrawable
+### 2.1 ArrayDrawable
 
 `ArrayDrawable`内部存储着一个Drawable数组，它与Android内置的`LayerDrawable`很相似，可见它将数组中的`Drawable`当做它的图层，在绘制的时候`ArrayDrawable`会按照数组顺序绘制其中的图层，数组最后的成员会显示在最上方。不过与`LayerDrawable`最大的不同的点有两处：
 - 绘制顺序虽然是数组顺序，但是`ArrayDrawable`在绘制时会跳过暂时不需要绘制的图层；
 - 在`ArrayDrawable`中不支持动态的添加/删除图层，只能在初始化时通过传入的数组决定图层数。不过好在它能够为存在的图层更换Drawable。（关于`LayerDrawable`可以参考我翻译的一文章：[Android LayerDrawable](http://blog.csdn.net/desmondj/article/details/47751553)。）
 
-###2.2 FadeDrawable
+### 2.2 FadeDrawable
 
 `FadeDrawable`继承了`ArrayDrawable`。它除了具有`ArrayDrawable`本身的功能之外，还提供隐藏/显示图层的功能（可设置渐变）。具体的几个核心函数有：
 
@@ -43,7 +43,7 @@ Fresco中定义了许多Drawable，它们都直接或间接继承了`Drawable`�
 它内部维护着一个boolean数组来维持需要显示的图层（可以调用`isLayerOn(int inxex)`查看指定图层是否显示）。
  
  
-##3 容器型Drawable
+## 3 容器型Drawable
  
 **ForwardingDrawable**
 
@@ -156,7 +156,7 @@ public static Matrix getTransform(
 - **RoundedCornersDrawable**：可以将内容的边界修剪成圆角矩形（目前版本暂不支持）或用实心的圆角矩形覆盖内容的容器。
 - **GenericDraweeHierarchy.RootDrawable**：专门用于顶层图层的容器。
 
-##4 视图型Drawable
+## 4 视图型Drawable
 
 大多数情况下，Fresco用于表现图片的视图型Drawable使用的就是Android原生`Drawable`来做图像的载体。不过也有两个例外：
 
@@ -195,7 +195,7 @@ public static Matrix getTransform(
 
 实际上这两个类的功能是有一定重合的，我认为是由于`RoundedCornerDrawable`目前只能做到用圆角矩形覆盖内容，而无法将内容修剪成圆角矩形，所以才使用了`RoundedBitmapDrawable`。关于`RoundedCornersDrawable`的功能Fresco也在改进中。期待后续它能将两个功能合并起来。
 
-##5 特殊Drawable - TransformAwareDrawable 和 VisibilityAwareDrawable
+## 5 特殊Drawable - TransformAwareDrawable 和 VisibilityAwareDrawable
 
 为什么说它们特殊呢，因为他们只是接口！
 
@@ -233,7 +233,7 @@ public interface TransformCallback {
 
 `VisibilityAwareDrawable`与`VisibilityCallback`搭配使用，它提供了在自身可见度改变的时候的通知函数（`onVisibilityChange(boolean visible)`）和在自身绘制时发生通知的回调(`onDraw()`)。仅仅`GenericDraweeHierarchy.RootDrawable`实现了它。
 
-##6 类图
+## 6 类图
 
 由于类中方法、变量过多，作者对其做了大量精简，仅用于参考设计层次。
 
