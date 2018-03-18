@@ -1,22 +1,22 @@
-#Fresco源码分析(6) - 缓存
+# Fresco源码分析(6) - 缓存
 ---
 
 > 作者：[Desmond 转载请注明出处！](https://github.com/desmond1121)
 
 Fresco中一共有三级缓存，其中前两级内存缓存都存储在Java堆上，本地缓存存储在本地文件目录中。
 
-##1 CacheKey
+## 1 CacheKey
 
 Fresco中专门用于缓存键的接口，有这两种类实现了`CacheKey`：
 
 - `BitmapMemoryCacheKey` 用于已解码的内存缓存键，会对Uri字符串、缩放尺寸、解码参数、PostProcessor等关键参数进行hashCode作为唯一标识；
 - `SimpleCacheKey` 普通的缓存键实现，使用传入字符串的hashCode作为唯一标识，所以需要保证相同键传入字符串相同。
 
-##2 内存缓存
+## 2 内存缓存
 
 已解码的内存缓存（BitmapMemoryCache）与未解码的内存缓存（EncodedMemoryCache）实现**唯一区别**就是已解码内存缓存的数据是CloseableReference<[CloseableBitmap][Closeable]>而未解码内存缓存的数据是CloseableReference<PooledByteBuffer>。即他们的实现方式一样，区别仅仅在于**资源的测量与释放方式不同**。它们使用`ValueDescriptor`来描述不同资源的数据大小，使用不同的`ResourceReleaser`来释放资源。
 
-###2.1 LRU缓存载体-CountingLruMap
+### 2.1 LRU缓存载体-CountingLruMap
 
 内存缓存中使用了LRU(Least Recent Used)来提高缓存功能，我们来看一下Fresco中实现它的逻辑。
 
@@ -42,7 +42,7 @@ Fresco中专门用于缓存键的接口，有这两种类实现了`CacheKey`：
 - `getCount()` 获取已经缓存的对象数；
 - `getSizeInBytes()` 获取缓存池中已经使用的大小。
 
-###2.2 具体缓存实现
+### 2.2 具体缓存实现
 
 Fresco中实现具体内存缓存的类是`CountingMemoryCache`，它内部维持着几个重要参数：
 
@@ -91,11 +91,11 @@ Fresco中实现具体内存缓存的类是`CountingMemoryCache`，它内部维�
 
 最后会调用`maybeEvectEntries`函数，判断是否需要释放资源，它的逻辑是：当**ExclusiveEntries**中已经缓存的对象超过缓存池的最大容纳对象**或者**已经超过了缓存池容量时，删除`ExclusiveEntries`中最早插入的对象，直到**ExclusiveEntries**缓存对象小于最大容纳对象**并且**在缓存池容量以内。实际上这个函数会在大部分的缓存操作中出现，保证每次操作结束后缓存处于一个健康的状态。
 
-###2.3 Instrument包装
+### 2.3 Instrument包装
 
 Fresco使用`InstrumentedMemoryCache`包装了`CountingMemoryCache`，主要增加的功能就是提供了`MemoryCacheTracker`，会在缓存命中或未命中时提供回调函数，供使用者实现自定义功能。
 
-###2.4 自定义参数
+### 2.4 自定义参数
 
 可以通过ImagePipelineConfig的以下两个函数来实现内存缓存参数部分自定义：
 
@@ -104,11 +104,11 @@ Fresco使用`InstrumentedMemoryCache`包装了`CountingMemoryCache`，主要增�
 
 这两个函数都需要提供`MemoryCacheParams`的Supplier，使用者可以自定义ImagePipelineConfig之后在初始化中应用它。
 
-##3 文件缓存
+## 3 文件缓存
 
 由于文件缓存是直接存储在磁盘上的，所以它的实现方式与内存缓存不同，而且带有缓冲区域，所以更加复杂。我总结它一共有三层内容：文件存储层，文件缓存层，缓冲缓存层。
 
-###3.1 文件存储层
+### 3.1 文件存储层
 
 文件缓存都是将实际的文件存储在存储设备中，Fresco的文件存储有两种格式的文件：
 
@@ -130,11 +130,11 @@ Fresco中定义了`BinaryResource`来封装文件对象，你可以通过它获�
 - `commit(String resourceId, BinaryResource temporary, Object debugInfo)` 将`BinaryResource`写入描述符指向的文件中，更新时间戳；
 - `remove(String resourceId)` 删除描述符指向的文件，正常返回被删除文件的大小，文件不存在则返回0，其他返回-1。
 
-###3.2 文件缓存层
+### 3.2 文件缓存层
 
 DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也使用了相应的LRU技术提高缓存效率，我们来看看它是怎么实现的。
 
-####3.2.1 LRU实现
+#### 3.2.1 LRU实现
 
 在evictAboveSize中我们可以看到所使用的LRU逻辑：
 
@@ -181,7 +181,7 @@ DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也�
 
 在`maybeEvictFilesInCacheDir`函数中我们可以看到当缓存过载时会**以缓存容量的90%为目标**进行清理。
 
-####3.2.2 同步操作
+#### 3.2.2 同步操作
 
 在文件缓存中维持一个对象`mLock`，该对象就是为了让各个操作保持同步。我们来看一下`DiskStorageCache`中的几个重要底层操作函数及它们的同步情况：
 
@@ -214,7 +214,7 @@ DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也�
 
 此外，它的删除资源操作`remove`函数也是同步的。
 
-###3.3 缓冲缓存层
+### 3.3 缓冲缓存层
 
 缓冲缓存层BufferedDiskCache将缓存层进行包装，它主要多了三个功能：
 
@@ -222,7 +222,7 @@ DiskStorageCache是Fresco实现文件缓存的主要类，在文件缓存中也�
 2. 提供了写入数据的办法，在`writeToDiskCache`中可以看出它提供的`WriterCallback`将要写入的`EncodedImage`转码成输入流；
 3. 将get、put两个方法放在后台线程中运行（get时在缓冲区域查找时除外），分别都是容量为2的线程池。
 
-###3.4 自定义参数
+### 3.4 自定义参数
 
 可以通过调用`ImagePipelineConfig.setMainDiskCacheConfig(DiskCacheConfig mainDiskCacheConfig)`设置文件缓存。
 
