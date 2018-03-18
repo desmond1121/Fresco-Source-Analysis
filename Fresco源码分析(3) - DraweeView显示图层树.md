@@ -5,11 +5,11 @@
 
 Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarchy显示到屏幕上的家伙。那我们来分析一下相关代码，看看它的逻辑是什么样的。
 
-##1 时序图
+## 1 时序图
 
 首先可以用以下这个图初步理解SimpleDraweeView在调用了`setUri(Uri uri)`之后的流程：
 
-![DraweeView](http://desmondyao.com/image/fresco/sequence_diagram_setUriSeq1.PNG)
+![DraweeView](http://blog.desmondyao.com/image/fresco/sequence_diagram_setUriSeq1.PNG)
 
 可以将这张图描述为以下信息：
 
@@ -17,7 +17,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 - DraweeController根据Uri获取数据源`DataSource`，并绑定数据订阅者`DataSubscriber`；
 - 当`DataSource`可以更新数据时通知`DataSubscriber`更新DraweeHierarchy。（在[Fresco源码分析(4) - 异步加载数据][4]中分析）
 
-##2 基类DraweeView
+## 2 基类DraweeView
 
 `DraweeView<DH extends DraweeHierarchy>`是Fresco视图中的基类，使用的泛型必须是`DraweeHierarchy`，它继承了`ImageView`。
 
@@ -37,7 +37,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 不过所幸Fresco实现了`SimpleDraweeVew`帮我们来处理这些繁琐的过程，它封装了`Controller`的使用。
 
-###2.1 DraweeHolder
+### 2.1 DraweeHolder
 
 `DraweeHolder`充斥在`DraweeView`的各个位置，每个`DraweeView`的函数都是由它的对应函数执行的。它随着`DraweeView`的产生而初始化。在深入了解视图绘制之前，我们有必要了解它是做什么的。
 
@@ -89,7 +89,7 @@ Fresco的源码中，DraweeView的介绍简洁明了：我就是把DraweeHierarc
 
 而`setController`会调用`DraweeHolder.setController`，将图层树的控制权交给DraweeController，并显示出图层树。
 
-##3 DraweeController
+## 3 DraweeController
 
 DraweeController是一个将Fresco中负责数据加载的组件组合起来并将信息反映到DraweeHierarchy的组件。它通过建造者模式初始化，基类`AbstractDraweeControllerBuilder`使用了四个泛型：（括号中为`PipelineDraweeControllerBuilder`所使用的类型）
 
@@ -100,7 +100,7 @@ DraweeController是一个将Fresco中负责数据加载的组件组合起来并�
 
 在`.build()`中会初始化DraweeController。下面我们会先介绍几个关键概念，然后介绍DraweeController的初始化过程。
 
-###3.1 ImageRequest
+### 3.1 ImageRequest
 
 `ImageRequest`存储着Image Pipeline处理被请求图片所需要的有用信息(Uri、是否渐进式图片、是否返回缩略图、缩放、是否自动旋转等)。
 
@@ -122,7 +122,7 @@ DraweeController是一个将Fresco中负责数据加载的组件组合起来并�
 
 DraweeController是使用ImageRequest来初始化数据订阅者的。`SimpleDraweeView`调用`setUri(Uri)`会产生一个默认的`ImageRequest`含有指定Uri信息，如果需要修改`ImageRequest`其他信息，必须手动创建`ImageRequest`，并在`PipelineDraweeControllerBuilder`调用`.build()`之前使用`.setImageRequest`设置它。
 
-###3.2 可关闭的引用
+### 3.2 可关闭的引用
 
 Facebook在Java中实现了具有引用计数功能的类：`SharedReference<T>`（注意不是Android里的SharedPreference）。它将类型为`T`的对象进行包装，为其实现增加引用数、减少引用数、删除引用的功能。
 
@@ -144,7 +144,7 @@ Fresco中定义了`CloseableImage`，它会在`finalize`的时候调用`close()`
 - `CloseableStaticBitmap` 它内部持有一个`CloseableReference<Bitmap>`包装目标`Bitamp`，以及关于图像质量、旋转角度的信息。在`close()`调用的时候会调用`CloseableReference`的`close()`函数释放资源，**释放的原理是Bitmap.recycle()**；
 - `CloseableAnimatedBitmap` 它内部持有一个`List<CloseableReference<Bitmap>>`包装起每一帧的`Bitmap`，还存有每一帧的时长。在`close()`调用的时候会递归释放列表资源。
 
-###3.3 数据订阅
+### 3.3 数据订阅
 
 Fresco中使用DataSource与DataScriber进行异步数据请求。DataSubscriber具有以下几个函数：
 
@@ -157,7 +157,7 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 更多对于数据订阅者的分析见[Fresco源码分析(4) - 异步加载数据][4]。
 
-###3.4 初始化Draweetroller
+### 3.4 初始化Draweetroller
 
 在`AbstractDraweeControllerBuilder`（`DraweeControllerBuilder`的基类）的`build()`函数中会调用继承类实现的`obtainController()`函数，在默认使用的`PipelineDraweeControllerBuilder`中，它会做三件重要的事情：
 
@@ -223,9 +223,9 @@ DataSource在接受到Image Pipeline提供的数据时调用`notifyDataSubscribe
 
 你可以继承它并在`DraweeControllerBuilder`中设置，从而实现一些自定义的提醒事件。
 
-##4 类图
+## 4 类图
 
-![DraweeView Diagram](http://desmondyao.com/image/fressco/class_diagram_draweeview.PNG)
+![DraweeView Diagram](http://blog.desmondyao.com/image/fressco/class_diagram_draweeview.PNG)
 
 [1]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(1)%20-%20%E5%9B%BE%E5%83%8F%E5%B1%82%E6%AC%A1%E4%B8%8E%E5%90%84%E7%B1%BBDrawable.md
 [2]: https://github.com/desmond1121/Fresco-Source-Analysis/blob/master/Fresco%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90(2)%20-%20GenericDraweeHierarchy%E6%9E%84%E5%BB%BA%E5%9B%BE%E5%B1%82.md
